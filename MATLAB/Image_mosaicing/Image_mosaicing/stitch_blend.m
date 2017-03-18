@@ -9,7 +9,8 @@ function target = stitch_blend( im1, im2, bestHomography,mask1,mask2)
 % the intersection mask
 mask3=zeros(size(mask2));
 for i=1:size(mask2,1)
-    for j=1:size(mosIm2,2)
+    %for j=1:size(mosIm2,2)
+    for j=1:1921
         if mask1(i,j)==1 && mask2(i,j)==0
             mask3(i,j)=1;
         end
