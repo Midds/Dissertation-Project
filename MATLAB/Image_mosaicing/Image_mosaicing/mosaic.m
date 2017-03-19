@@ -1,3 +1,4 @@
+close all;
 %% 
 % Read the images and process
 % [im1,im2] = readIms('yard-02.png','yard-01.png',.5);
@@ -12,7 +13,7 @@
 % [im1,im2] = readIms('rio-36.png','rio-37.png',.5);
 % [im1,im2] = readIms('b.jpg','a.jpg',1);
 % [im1,im2] = readIms('goldengate-04.png','goldengate-05.png',1);
- [im1,im2] = readIms('im16.jpeg','im18.jpeg',1);
+ [im1,im2] = readIms('a.jpg','b.jpg',1);
  disp('im read');
 % Find SIFT Features and Descriptors
 [k1,d1] = vl_sift(im1);
@@ -60,21 +61,21 @@ colormap gray;
 title('Testing final mosaic');
 disp('final done');
 
-%%
-%Blend
-[mask1, mask2] = masks(im1, im2, bestHomography);
-%%
-blended = stitch_blend(im1,im2,bestHomography,mask1,mask2);
-
-figure;
-clf;
-imagesc(blended);
-axis image off ;
-title('Blended') ;
-colormap gray;
-
-disp('blend done');
-
-%% Draw Some Matching Features
-npts = 25;
-plot_descr(im1,im2,d1,d2,k1,k2,matches,npts)
+% %%
+% %Blend
+% [mask1, mask2] = masks(im1, im2, bestHomography);
+% 
+% blended = stitch_blend(im1,im2,bestHomography,mask1,mask2);
+% 
+% figure;
+% clf;
+% imagesc(blended);
+% axis image off ;  
+% title('Blended') ;
+% colormap gray;
+% 
+% disp('blend done');
+% 
+% %% Draw Some Matching Features
+% npts = 25;
+% plot_descr(im1,im2,d1,d2,k1,k2,matches,npts)

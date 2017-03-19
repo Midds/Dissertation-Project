@@ -1,7 +1,7 @@
 % TO RUN, VLFEAT MUST FIRST BE INSTALLED ON THE MACHINE
 % VLFEAT can be downloaded from http://www.vlfeat.org/download.html or http://www.vlfeat.org/index.html
 % once downloaded and unpacked the command below must be ran on each Matlab restart
-% run D:\Users\James\Documents\MATLAB\vlfeat-0.9.20/toolbox/vl_setup
+% run D:\Users\James\Documents\GitHub\ImageStitching\MATLAB\vlfeat-0.9.20/toolbox/vl_setup
 % - with the pathway changed to match the vl_setup path
 close all;
 
@@ -18,7 +18,7 @@ title('Montage');
 im1 = imread('a.jpg');
 im2 = imread('b.jpg');
 
-% PREPROCESSING
+%% PREPROCESSING
 % convert to greyscale
 im1 = rgb2gray(im1);
 im2 = rgb2gray(im2);
@@ -30,7 +30,7 @@ im2 = single(im2);
 
 disp('pre-processing done');
 
-% FINDING SIFT FEATURES AND DESCRIPTORS
+%% FINDING SIFT FEATURES AND DESCRIPTORS
 % vl_sift uses the vlfeat open source implementation of sift to find
 % keypoints [k] and descriptors [d]
 [k1,d1] = vl_sift(im1);
@@ -46,8 +46,8 @@ disp('matched local descriptors');
 %% Draw Some Matching Features
 npts = 10;
 
-figure(1), colormap gray; imagesc(im1);
-figure(2), colormap gray; imagesc(im2);
+figure, colormap gray; imagesc(im1);
+figure, colormap gray; imagesc(im2);
 for i = 1 : npts
     ind1 = matches(1,i);
     ind2 = matches(2,i);
@@ -59,11 +59,10 @@ for i = 1 : npts
     figure(2)
     plot2 = vl_plotsiftdescriptor(d2(:, ind2),k2(:, ind2));
     set(plot2, 'color', hsv2rgb([i / npts, 1, 1]));
-    
 end
+disp('Matching features done');
 
-disp('End');
-
+%% DISPLAYING MATCHED KEYPOINTS BETWEEN IMAGES
 figure;
 imagesc(cat(2, im1, im2)) ;
 hold on;
@@ -71,35 +70,61 @@ plot (k1(1,matches(1,:)), k1(2, matches(1,:)), 'b*');
 
 hold on ;
 
-xa = k1(1,matches(1,:)) ;
-xb = k2(1,matches(2,:)) + size(im1,2) ;
-ya = k1(2,matches(1,:)) ;
-yb = k2(2,matches(2,:)) ;
+x1 = k1(1,matches(1,:)) ;
+x2 = k2(1,matches(2,:)) + size(im1,2) ;
+x3 = k1(2,matches(1,:)) ;
+x4 = k2(2,matches(2,:)) ;
 
-h = line([xa ; xb], [ya ; yb]) ;
-set(h,'linewidth', 1, 'color', 'b') ;
-
+connectLine = line([x1 ; x2], [x3 ; x4]) ;
+set(connectLine,'linewidth', 1, 'color', 'b') ;
 
 hold on;
 k2(1,:) = k2(1,:) + size(im1,2) ;
 plot (k2(1, matches(2,:)), k2(2, matches (2,:)), 'r*');
 axis image off ;
 
-disp('end2');
+disp('Matched features displayed');
+%%
+% %% RANSAC
+% [bestHomography, bestInlierCount] = RANSAC(k1,k2,matches);
+% disp('Ransac done');
+% 
+% %% STITCHING
+% mosIm2 = stitch (im1,im2,bestHomography);
+% figure;
+% imagesc(mosIm2);
+% disp('stitch done');
+% 
+% %%
+% perc = bestInlierCount*100/size(matches,2);
+% % imwrite(mosIm2,'results/goldengate04_05.png');
+% %%
+% figure;
+% clf;
+% imagesc(mosIm2);
+% axis image off ;
+% title('Mosaic') ;
+% colormap gray;
+% 
+% disp('mosaic done');
+% 
+% %% Cylindrical Mapping
+% 
+% mosImCyl = stitch_cylinder (im1,im2,bestHomography);
+% 
+% figure;
+% clf;
+% imagesc(mosImCyl);
+% axis image off ;
+% title('Mosaic') ;
+% colormap gray;
+% 
+% disp('cylinder stitch done');
+% 
+% figure;
+% imagesc(mosIm2);
+% colormap gray;
+% title('Testing final mosaic');
+% disp('final done');
+%%
 
-figure; clf ;
-imagesc(cat(2, im1, im2)) ;
-%%%%
-xa = k1(1,matches(1,:)) ;
-xb = k2(1,matches(2,:)) + size(im1,2) ;
-ya = k1(2,matches(1,:)) ;
-yb = k2(2,matches(2,:)) ;
-
-hold on ;
-h = line([xa ; xb], [ya ; yb]) ;
-set(h,'linewidth', 1, 'color', 'b') ;
-
-vl_plotframe(k1(:,matches(1,:))) ;
-k2(1,:) = k2(1,:) + size(im1,2) ;
-vl_plotframe(k2(:,matches(2,:))) ;
-axis image off ;
