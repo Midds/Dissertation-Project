@@ -13,8 +13,10 @@ figure;
 montage(imgs.Files);
 title('Montage');
 
-%im1 = imread('im15.jpeg'); im2 = imread('im16.jpeg');
-im1 = imread('a.jpg'); im2 = imread('b.jpg');
+%im1 = imread('im15.jpeg');
+%im2 = imread('im16.jpeg');
+im1 = imread('a.jpg');
+im2 = imread('b.jpg');
 
 %% PREPROCESSING
 
@@ -24,26 +26,21 @@ im1 = imread('a.jpg'); im2 = imread('b.jpg');
 im1 = im2single(im1);
 im2 = im2single(im2);
 
-% make grayscale
-if size(im1,3) > 1 
-    im1g = rgb2gray(im1); 
-else
-    im1g = im1;
-end
+% convert to greyscale
+im1 = rgb2gray(im1);
+im2 = rgb2gray(im2);
 
-if size(im2,3) > 1
-    im2g = rgb2gray(im2);
-else
-    im2g = im2; 
-end
+% make grayscale
+if size(im1,3) > 1, im1g = rgb2gray(im1) ; else im1g = im1 ; end
+if size(im2,3) > 1, im2g = rgb2gray(im2) ; else im2g = im2 ; end
 
 disp('pre-processing done');
 
 %% FINDING SIFT FEATURES AND DESCRIPTORS
 % vl_sift uses the vlfeat open source implementation of sift to find
 % keypoints [k] and descriptors [d]
-[k1,d1] = vl_sift(im1g);
-[k2,d2] = vl_sift(im2g);
+[k1,d1] = vl_sift(im1);
+[k2,d2] = vl_sift(im2);
 disp('sift features found');
 
 % MATCH LOCAL DESCRIPTORS
