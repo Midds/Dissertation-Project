@@ -3,13 +3,9 @@ close all;
 % Displaying unchanged frames
 
 
-for i = 10:20
-    fname = ['im' num2str(i) '.jpeg'];
-    imwrite(frameArray{i}, fname);
-end
-
 %imds = imageDatastore({'im10.jpeg';'im11.jpeg';'im12.jpeg';'im13.jpeg';'im14.jpeg';'im15.jpeg';'im16.jpeg';'im17.jpeg';'im18.jpeg';'im19.jpeg';'im20.jpeg'});
-imds = imageDatastore({'im16.jpeg';'im18.jpeg';});
+imds = imageDatastore({'tiger/im9.jpeg';'tiger/im11.jpeg'});
+%imds = imageDatastore({'london/im16.jpeg';'london/im18.jpeg';});
 
 figure;
 montage(imds.Files);

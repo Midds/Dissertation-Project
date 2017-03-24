@@ -1,6 +1,7 @@
 
 % Loading input video file
-pV = VideoReader('9poster4.mp4');
+%pV = VideoReader('9poster4.mp4');
+pV = VideoReader('tiger2.mp4');
 
 % PRE-PROCESSING
 % Splitting video into a number of keyframes (to emulate lower framerate).
@@ -28,6 +29,11 @@ end
 for i = 1:framesToGet
     imshow(frameArray{i});
 end
+
+%saving images to file
+%for i = 1:framesToGet
+%    imwrite(frameArray{i}, sprintf('tiger/im%d.jpeg', i));
+%end
 
 
 
