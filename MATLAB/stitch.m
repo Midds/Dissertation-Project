@@ -16,7 +16,7 @@ montage(imds.Files);
 title('Montage');
 
 im1 = readimage(imds,1);
-im2 = readimage(imgs,2);
+im2 = readimage(imds,2);
 %im1 = imread('tiger/im9.jpeg'); im2 = imread('tiger/im11.jpeg');
 %im1 = imread('london/im15.jpeg'); im2 = imread('london/im16.jpeg');
 %im1 = imread('a.jpg'); im2 = imread('b.jpg');
