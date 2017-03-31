@@ -1,8 +1,8 @@
 
 % Loading input video file
 %pV = VideoReader('9poster4.mp4');
-pV = VideoReader('tiger2.mp4');
-
+%pV = VideoReader('tiger2.mp4');
+%pV = Video
 % PRE-PROCESSING
 % Splitting video into a number of keyframes (to emulate lower framerate).
 % This takes some compuational time, but is only necessary for this

@@ -1,15 +1,16 @@
-% TO RUN, VLFEAT MUST FIRST BE INSTALLED ON THE MACHINE
+%% TO RUN, VLFEAT MUST FIRST BE INSTALLED ON THE MACHINE
 % VLFEAT can be downloaded from http://www.vlfeat.org/download.html or http://www.vlfeat.org/index.html
 % once downloaded and unpacked the command below must be ran on each Matlab restart
 % run D:\Users\James\Documents\GitHub\ImageStitching\MATLAB\vlfeat-0.9.20/toolbox/vl_setup
 % - with the pathway changed to match the vl_setup path
 close all;
 
-% images to merge
+%% Images to merge
 % uncomment depending on which image you want to see
-imds = imageDatastore({'tiger/tigerSmall1.jpeg';'tiger/tigerSmall2.jpeg'});
-%imds = imageDatastore({'london/im15.jpeg';'london/im16.jpeg'});
-%imds = imageDatastore({'a.jpg';'b.jpg'});
+% imds = imageDatastore({'tiger/tigerSmall10.jpeg';'tiger/tigerSmall11.jpeg'});
+% imds = imageDatastore({'london/im15.jpeg';'london/im16.jpeg'});
+% imds = imageDatastore({'a.jpg';'b.jpg'});
+ imds = imageDatastore({'barret1/im65.jpeg';'barret1/im66.jpeg'});
 
 figure;
 montage(imds.Files);
@@ -95,6 +96,7 @@ temp = k2; %k2 is used later on so temp is needed here
 temp(1,:) = k2(1,:) + size(im1,2) ;
 plot (temp(1, matches(2,:)), temp(2, matches (2,:)), 'r*');
 axis image off ;
+title('Matched Features (SIFT)');
 
 disp('Matched features displayed');
 
@@ -126,6 +128,7 @@ end
 H = H{best} ;
 ok = ok{best} ;
 
+disp('RANSAC done');
 
 %% MOSAICING
 
@@ -150,6 +153,8 @@ mass = ~isnan(im1_) + ~isnan(im2_) ;
 im1_(isnan(im1_)) = 0 ;
 im2_(isnan(im2_)) = 0 ;
 mosaic = (im1_ + im2_) ./ mass ;
+
+disp('Mosaicing done');
 
 figure ; clf ;
 imagesc(mosaic) ; axis image off ;
