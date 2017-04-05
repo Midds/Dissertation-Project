@@ -1,8 +1,8 @@
-
+close all;
 %% Loading input video file
 %pV = VideoReader('9poster4.mp4');
-%pV = VideoReader('tiger2.mp4');
-pV = VideoReader('Barretxx1.mpg');
+pV = VideoReader('tiger2.mp4');
+%pV = VideoReader('Barretxx1.mpg');
 
 %% PRE-PROCESSING
 % Splitting video into a number of keyframes (to emulate lower framerate).
@@ -13,7 +13,7 @@ pV = VideoReader('Barretxx1.mpg');
 % keyFrameNo is used to decide framesToGet and is used in the for loop.
 % A higher keyFrameNo means less frames in the final video.
 totalFrames = pV.NumberOfFrames;
-keyFrameNo = 2; % gets every x frame, change number to change x
+keyFrameNo = 1; % gets every x frame, change number to change x
 framesToGet = round(totalFrames / keyFrameNo);
 
 %% Looping through the video picking out frames at the specified interval
@@ -33,6 +33,7 @@ end
 
 %% saving images to file - uncomment to save
 
+% variables needed for imcrop
 xmin = 100;
 ymin = 35;
 width = 220;
@@ -42,9 +43,11 @@ rect = [xmin ymin width height];
 for i = 1:framesToGet
     % cropping for barret videos (to crop out the black border)
     % make sure to comment out for videos other than the barret videos
-    frameArray{i} = imcrop(frameArray{i},rect);
+    %frameArray{i} = imcrop(frameArray{i},rect);
     % write to file
-    imwrite(frameArray{i}, sprintf('barret1/im%d.jpeg', i));
+    %imwrite(frameArray{i}, sprintf('barret1/im%d.jpeg', i));
+    imwrite(frameArray{i}, sprintf('tiger/im%d.jpeg', i));
+
 end
 
 
