@@ -1,8 +1,35 @@
 clear; close;
 %% Preprocess %%
 % Read images
-im1 = imread('tiger/im172small.jpeg');
-im2 = imread('tiger/im171small.jpeg');
+% im1 = imread('tiger/im168small.jpeg');
+% im2 = imread('tiger/im169small.jpeg');
+% im1 = imread('tiger/im170small.jpeg');
+% im2 = imread('tiger/im171small.jpeg');
+% im2 = imread('tiger/im172small.jpeg');
+% im2 = imread('tiger/im173small.jpeg');
+% im1 = imread('tiger/im174small.jpeg');
+
+% im1 = imread('barret1/im14.jpeg');
+% barret14 doesnt work
+
+% im1 = imread('london2/im370.jpeg');
+% im1 = imread('london2/im371.jpeg');
+% im1 = imread('london2/im372.jpeg');
+% im2 = imread('london2/im373.jpeg');
+% im2 = imread('london2/im374.jpeg');
+% im2 = imread('london2/im375.jpeg');
+% im1 = imread('london2/im376.jpeg');
+
+ im1 = imresize(imread('barret2/im170.jpeg'), 2);
+ im2 = imresize(imread('barret2/im171.jpeg'), 2);
+% im1 = imread('london2/im372.jpeg');
+% im2 = imread('london2/im373.jpeg');
+% im2 = imread('london2/im374.jpeg');
+% im2 = imread('london2/im375.jpeg');
+% im1 = imread('london2/im376.jpeg');
+
+
+
 % Convert RGB image to grayscale
 im1g = single(rgb2gray(im1));
 im2g = single(rgb2gray(im2));

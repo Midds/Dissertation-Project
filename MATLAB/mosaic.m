@@ -1,6 +1,5 @@
 function [ IMG ] = mosaic( IM, im , H, x_min, y_min )
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% This function maps an original image 'im' in a plane to a new image
+% This function maps image 'im' in a plane to a new image
 % 'img' in the mosaiced plane transformed by a homography H
 % Arguments:
 % im - single image
@@ -9,7 +8,7 @@ function [ IMG ] = mosaic( IM, im , H, x_min, y_min )
 % x_min - shift to x-direction
 % y_min - shift to y-direction
 % IMG - updated mosaiced image
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 % Size of single image
 [M,N,C] = size(im);
 % Size of mosaiced image

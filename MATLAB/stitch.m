@@ -7,14 +7,24 @@ close all;
 
 %% Images to merge
 % uncomment depending on which image you want to see
- imds = imageDatastore({'tiger/tigerSmall9.jpeg';'tiger/tigerSmall10.jpeg';'tiger/tigerSmall11.jpeg'});
+% imds = imageDatastore({'tiger/tigerSmall9.jpeg';'tiger/tigerSmall10.jpeg';'tiger/tigerSmall11.jpeg'});
 % imds = imageDatastore({'london/im15.jpeg';'london/im16.jpeg'});
 % imds = imageDatastore({'a.jpg';'b.jpg'});
-% imds = imageDatastore({'barret1/im67.jpeg';'barret1/im68.jpeg'});
+ imds = imageDatastore({'barret2/im173.jpeg';'barret2/im174.jpeg'});
 % imds = imageDatastore({'mosaic2.jpeg';'mosaicResized.jpeg'});
 % imds = imageDatastore({'barret1/im67.jpeg';'barret1/im68.jpeg'});
 
 % imds = imageDatastore({'mosaic.jpeg';'testResized.jpeg'}); %mosaic = 67 + 68
+
+%  im1 = imread('london2/im370.jpeg');
+%  im2 = imread('london2/im371.jpeg');
+%  im3 = imread('london2/im372.jpeg');
+%  im4 = imread('london2/im373.jpeg');
+%  im5 = imread('london2/im374.jpeg');
+%  im6 = imread('london2/im375.jpeg');
+%  im7 = imread('london2/im376.jpeg');
+
+% imds = imageDatastore({'london2/im370.jpeg';'london2/im371.jpeg';'london2/im372.jpeg';'london2/im373.jpeg';'london2/im374.jpeg';'london2/im375.jpeg';'london2/im376.jpeg'});
 
 figure;
 montage(imds.Files);
@@ -23,7 +33,7 @@ numImages = numel(imds.Files);
 
 im1 = readimage(imds,1);
 im2 = readimage(imds,2);
-im3 = readimage(imds,3);
+%im3 = readimage(imds,3);
 
 % Iterate over remaining image pairs
 for n = 2:numImages
@@ -47,11 +57,11 @@ for n = 2:numImages
         im2g = im2; 
     end
     
-    if size(im3,3) > 1
-        im3g = rgb2gray(im3);
-    else
-        im3g = im3; 
-    end
+%     if size(im3,3) > 1
+%         im3g = rgb2gray(im3);
+%     else
+%         im3g = im3; 
+%     end
 
     disp('pre-processing done');
 

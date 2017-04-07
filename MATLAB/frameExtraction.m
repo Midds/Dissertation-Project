@@ -1,8 +1,9 @@
 close all;
 %% Loading input video file
-%pV = VideoReader('9poster4.mp4');
-pV = VideoReader('tiger2.mp4');
+% pV = VideoReader('9poster4.mp4');
+% pV = VideoReader('tiger2.mp4');
 %pV = VideoReader('Barretxx1.mpg');
+pV = VideoReader('Barretxx2.mpg');
 
 %% PRE-PROCESSING
 % Splitting video into a number of keyframes (to emulate lower framerate).
@@ -43,10 +44,13 @@ rect = [xmin ymin width height];
 for i = 1:framesToGet
     % cropping for barret videos (to crop out the black border)
     % make sure to comment out for videos other than the barret videos
-    %frameArray{i} = imcrop(frameArray{i},rect);
+    frameArray{i} = imcrop(frameArray{i},rect);
     % write to file
-    %imwrite(frameArray{i}, sprintf('barret1/im%d.jpeg', i));
-    imwrite(frameArray{i}, sprintf('tiger/im%d.jpeg', i));
+    imwrite(frameArray{i}, sprintf('barret2/im%d.jpeg', i));
+    %imwrite(frameArray{i}, sprintf('tiger/im%d.jpeg', i));
+    
+    %imwrite(imresize(frameArray{i},0.5), sprintf('london2/im%d.jpeg', i));
+   % imwrite(frameArray{i}, sprintf('london2/im%d.jpeg', i));
 
 end
 
