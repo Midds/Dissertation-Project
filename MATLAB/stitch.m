@@ -187,38 +187,65 @@ for n = 2:numImages
     drawnow ;
 
 end
-%% MOSAICING
-% Works by transforming the first image onto the plane of the second,
-% before stiching them together. Images are stitched by transforming 
-% pixel coordinates of the first image to the pixel coordinates of the 
-% second image plane by multiplying with the homography matrix H
+% %% MOSAICING
+% % Works by transforming the first image onto the plane of the second,
+% % before stiching them together. Images are stitched by transforming 
+% % pixel coordinates of the first image to the pixel coordinates of the 
+% % second image plane by multiplying with the homography matrix H
+% 
+% box2 = [1  size(im2,2) size(im2,2)  1 ;
+%         1  1           size(im2,1)  size(im2,1) ;
+%         1  1           1            1 ] ;
+% box2_ = inv(H) * box2 ;
+% box2_(1,:) = box2_(1,:) ./ box2_(3,:) ;
+% box2_(2,:) = box2_(2,:) ./ box2_(3,:) ;
+% ur = min([1 box2_(1,:)]):max([size(im1,2) box2_(1,:)]) ;
+% vr = min([1 box2_(2,:)]):max([size(im1,1) box2_(2,:)]) ;
+% 
+% [u,v] = meshgrid(ur,vr) ;
+% im1_ = vl_imwbackward(im2double(im1),u,v) ;
+% 
+% z_ = H(3,1) * u + H(3,2) * v + H(3,3) ;
+% u_ = (H(1,1) * u + H(1,2) * v + H(1,3)) ./ z_ ;
+% v_ = (H(2,1) * u + H(2,2) * v + H(2,3)) ./ z_ ;
+% im2_ = vl_imwbackward(im2double(im2),u_,v_) ;
+% 
+% mass = ~isnan(im1_) + ~isnan(im2_) ;
+% im1_(isnan(im1_)) = 0 ;
+% im2_(isnan(im2_)) = 0 ;
+% mosaic = (im1_ + im2_) ./ mass ;
+% 
+% disp('Mosaicing done');
+% 
+% figure ; clf ;
+% imagesc(mosaic) ; axis image off ;
+% title('Mosaic') ;
+% 
+% imwrite(mosaic, sprintf('mosaic.jpeg'));
 
-box2 = [1  size(im2,2) size(im2,2)  1 ;
-        1  1           size(im2,1)  size(im2,1) ;
-        1  1           1            1 ] ;
-box2_ = inv(H) * box2 ;
-box2_(1,:) = box2_(1,:) ./ box2_(3,:) ;
-box2_(2,:) = box2_(2,:) ./ box2_(3,:) ;
-ur = min([1 box2_(1,:)]):max([size(im1,2) box2_(1,:)]) ;
-vr = min([1 box2_(2,:)]):max([size(im1,1) box2_(2,:)]) ;
+%% Boundary Condition of Mosaiced Image %%
+[M,N,C] = size(im2);
+H12 = H*H;
+H21 = H*H;
 
-[u,v] = meshgrid(ur,vr) ;
-im1_ = vl_imwbackward(im2double(im1),u,v) ;
+h12 = H'; h12 = h12(:); % Change homograpy to a vector form.
 
-z_ = H(3,1) * u + H(3,2) * v + H(3,3) ;
-u_ = (H(1,1) * u + H(1,2) * v + H(1,3)) ./ z_ ;
-v_ = (H(2,1) * u + H(2,2) * v + H(2,3)) ./ z_ ;
-im2_ = vl_imwbackward(im2double(im2),u_,v_) ;
+fprintf('Changed to vector format\n');
 
-mass = ~isnan(im1_) + ~isnan(im2_) ;
-im1_(isnan(im1_)) = 0 ;
-im2_(isnan(im2_)) = 0 ;
-mosaic = (im1_ + im2_) ./ mass ;
+c14 = fun(h12,[1,1,N,1,1,M,N,M]); % Transformed boundaries of im1
+c74 = fun(h12,[1,1,N,1,1,M,N,M]); % Transformed boundaries of im7
+fprintf('boundaries found\n');
 
-disp('Mosaicing done');
+x = [1,3,5,7];
+y = [2,4,6,8];
+xmin = round(min([c14(x);c74(x)]));
+xmax = round(max([c14(x);c74(x)]));
+ymin = round(min([c14(y);c74(y)]));
+ymax = round(max([c14(y);c74(y)]));
 
-figure ; clf ;
-imagesc(mosaic) ; axis image off ;
-title('Mosaic') ;
+fprintf('minmax boundary done\n');
 
-imwrite(mosaic, sprintf('mosaic.jpeg'));
+img = zeros(ymax-ymin+1,xmax-xmin+1,C); % Initialize mosaiced image
+fprintf('assigned zeros done\n');
+img = mosaic(img,im1,H,xmin,ymin); % Mosaicking im1
+figure; imshow(img);

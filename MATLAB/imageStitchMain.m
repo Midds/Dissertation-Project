@@ -1,34 +1,43 @@
 close all;
 %% Preprocess %%
 % Load single images.
-% im1 = imread('tiger/im168small.jpeg');
-% im2 = imread('tiger/im169small.jpeg');
-% im3 = imread('tiger/im170small.jpeg');
-% im4 = imread('tiger/im171small.jpeg');
-% im5 = imread('tiger/im172small.jpeg');
-% im6 = imread('tiger/im173small.jpeg');
-% im7 = imread('tiger/im174small.jpeg');
+im1 = imread('tiger/im168small.jpeg');
+im2 = imread('tiger/im169small.jpeg');
+im3 = imread('tiger/im170small.jpeg');
+im4 = imread('tiger/im171small.jpeg');
+im5 = imread('tiger/im172small.jpeg');
+im6 = imread('tiger/im173small.jpeg');
+im7 = imread('tiger/im174small.jpeg');
 
- im1 = imread('london2/im370.jpeg');
- im2 = imread('london2/im371.jpeg');
- im3 = imread('london2/im372.jpeg');
- im4 = imread('london2/im373.jpeg');
- im5 = imread('london2/im374.jpeg');
- im6 = imread('london2/im375.jpeg');
- im7 = imread('london2/im376.jpeg');
+%  im1 = imread('london2/im370.jpeg');
+%  im2 = imread('london2/im371.jpeg');
+%  im3 = imread('london2/im372.jpeg');
+%  im4 = imread('london2/im373.jpeg');
+%  im5 = imread('london2/im374.jpeg');
+%  im6 = imread('london2/im375.jpeg');
+%  im7 = imread('london2/im376.jpeg');
 [M,N,C] = size(im2);
 
 fprintf('imreads done \n');
 
 % Load estimated and refined homographies in previous steps.
 % All the refined homographies were saved as mat files.
-H12 = load('L1-2'); H12 = H12.H; % Homography of im1 to im2
-H23 = load('L2-3'); H23 = H23.H; % Homography of im3 to im2
-H34 = load('L3-4'); H34 = H34.H; % Homography of im1 to im2
-H54 = load('L5-4'); H54 = H54.H; % Homography of im3 to im2
-H65 = load('L6-5'); H65 = H65.H; % Homography of im1 to im2
-H76 = load('L7-6'); H76 = H76.H; % Homography of im3 to im2
 
+%for london
+% H12 = load('L1-2'); H12 = H12.H; % Homography of im1 to im2
+% H23 = load('L2-3'); H23 = H23.H; % Homography of im3 to im2
+% H34 = load('L3-4'); H34 = H34.H; % Homography of im1 to im2
+% H54 = load('L5-4'); H54 = H54.H; % Homography of im3 to im2
+% H65 = load('L6-5'); H65 = H65.H; % Homography of im1 to im2
+% H76 = load('L7-6'); H76 = H76.H; % Homography of im3 to im2
+
+%for tiger
+H12 = load('Test1_2'); H12 = H12.H; % Homography of im1 to im2
+H23 = load('Test2_3'); H23 = H23.H; % Homography of im3 to im2
+H34 = load('Test3_4'); H34 = H34.H; % Homography of im1 to im2
+H54 = load('Test5_4'); H54 = H54.H; % Homography of im3 to im2
+H65 = load('Test6_5'); H65 = H65.H; % Homography of im1 to im2
+H76 = load('Test7_6'); H76 = H76.H; % Homography of im3 to im2
 fprintf('Homography matrices loaded \n');
 
 % im1 im2 im3 im4 im5 im6 im7 <- order of single images : im4 is in center.

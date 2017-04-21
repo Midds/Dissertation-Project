@@ -7,8 +7,8 @@ close all;
 
 %% Images to merge
 % uncomment depending on which image you want to see
-% imds = imageDatastore({'tiger/im168small.jpeg';'tiger/im169small.jpeg';'tiger/im170small.jpeg';'tiger/im171small.jpeg';'tiger/im172small.jpeg';'tiger/im173small.jpeg';'tiger/im174small.jpeg'});
- imds = imageDatastore({'barret2/im170.jpeg';'barret2/im171.jpeg';'barret2/im172.jpeg';'barret2/im173.jpeg';'barret2/im174.jpeg';'barret2/im175.jpeg';'barret2/im176.jpeg'});
+ imds = imageDatastore({'tiger/im168small.jpeg';'tiger/im169small.jpeg';'tiger/im170small.jpeg';'tiger/im171small.jpeg';'tiger/im172small.jpeg';'tiger/im173small.jpeg';'tiger/im174small.jpeg'});
+% imds = imageDatastore({'barret2/im170.jpeg';'barret2/im171.jpeg';'barret2/im172.jpeg';'barret2/im173.jpeg';'barret2/im174.jpeg';'barret2/im175.jpeg';'barret2/im176.jpeg'});
 
  % imds = imageDatastore({'tiger/tigerSmall10.jpeg';'tiger/tigerSmall11.jpeg'});
 % imds = imageDatastore({'london/im15.jpeg';'london/im16.jpeg'});

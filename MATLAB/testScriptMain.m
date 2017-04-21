@@ -2,12 +2,12 @@ clear; close;
 %% Preprocess %%
 % Read images
 % im1 = imread('tiger/im168small.jpeg');
-% im2 = imread('tiger/im169small.jpeg');
+% im1 = imread('tiger/im169small.jpeg');
 % im1 = imread('tiger/im170small.jpeg');
 % im2 = imread('tiger/im171small.jpeg');
 % im2 = imread('tiger/im172small.jpeg');
-% im2 = imread('tiger/im173small.jpeg');
-% im1 = imread('tiger/im174small.jpeg');
+ im2 = imread('tiger/im173small.jpeg');
+ im1 = imread('tiger/im174small.jpeg');
 
 % im1 = imread('barret1/im14.jpeg');
 % barret14 doesnt work
@@ -20,8 +20,8 @@ clear; close;
 % im2 = imread('london2/im375.jpeg');
 % im1 = imread('london2/im376.jpeg');
 
- im1 = imresize(imread('barret2/im170.jpeg'), 2);
- im2 = imresize(imread('barret2/im171.jpeg'), 2);
+% im1 = imresize(imread('barret2/im170.jpeg'), 2);
+% im2 = imresize(imread('barret2/im171.jpeg'), 2);
 % im1 = imread('london2/im372.jpeg');
 % im2 = imread('london2/im373.jpeg');
 % im2 = imread('london2/im374.jpeg');
@@ -124,3 +124,8 @@ c2 = c2(:);
 opt = optimset('Algorithm','levenberg-marquardt');
 h2 = lsqcurvefit(@fun,h1,c1,c2,[],[],opt); % Refined homography by L.M.
 H = [h2(1),h2(2),h2(3);h2(4),h2(5),h2(6);h2(7),h2(8),h2(9)];
+
+fprintf('Saving H matrix');
+        
+        name = ['Test7_6'];
+        save(char(name) , 'H');
