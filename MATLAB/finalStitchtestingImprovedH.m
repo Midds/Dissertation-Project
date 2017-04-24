@@ -130,8 +130,32 @@ for j = 1:2
         
         [score, best] = max(score) ;
         H = H{best} ; % all matches
-        ok = ok{best} ; % inliner matches
+        inliers = ok{best} ; % inliner matches
         
+        %% TESTING LEAST LINEAR
+        M = 100;
+        % Linear Least Squares %%
+        A = zeros(2*M,9);
+        for k = 1:M
+            A(2*k-1:2*k,:)=...
+                [0,0,0,-[c1(inliers(k),:),1],c2(inliers(k),2)*[c1(inliers(k),:),1];
+                [c1(inliers(k),:),1],0,0,0,-c2(inliers(k),1)*[c1(inliers(k),:),1]];
+        end
+        [U,D,V] = svd(A);
+        h1 = V(:,9); % Homography estimated by LLS with all inliers
+        %% Non-linear Least Square (Levenberg-Marquardt) %%
+        c1 = c1(inliers,:)';
+        c1 = c1(:);
+        c2 = c2(inliers,:)';
+        c2 = c2(:);
+        opt = optimset('Algorithm','levenberg-marquardt');
+        h2 = lsqcurvefit(@fun,h1,c1,c2,[],[],opt); % Refined homography by L.M.
+        H = [h2(1),h2(2),h2(3);h2(4),h2(5),h2(6);h2(7),h2(8),h2(9)];
+        
+        
+        
+        
+        %%
         fprintf('Saving H matrix for im%d and im%d\n',m-1, m);
         
         %name = ['H', string(m-1), '_', string(m)];
@@ -163,11 +187,11 @@ for j = 1:2
         subplot(2,1,2) ;
         imagesc([padarray(imPrev,dh1,'post') padarray(Ig,dh2,'post')]) ;
         o = size(imPrev,2) ;
-        line([F1(1,matches(1,ok));F2(1,matches(2,ok))+o], ...
-            [F1(2,matches(1,ok));F2(2,matches(2,ok))]) ;
+        line([F1(1,matches(1,inliers));F2(1,matches(2,inliers))+o], ...
+            [F1(2,matches(1,inliers));F2(2,matches(2,inliers))]) ;
         title(sprintf('%d (%.2f%%) inliner matches out of %d', ...
-            sum(ok), ...
-            100*sum(ok)/numMatches, ...
+            sum(inliers), ...
+            100*sum(inliers)/numMatches, ...
             numMatches)) ;
         axis image off ;
         

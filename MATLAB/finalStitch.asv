@@ -3,7 +3,7 @@
 % once downloaded and unpacked the command below must be ran on each Matlab restart
 % run D:\Users\James\Documents\GitHub\ImageStitching\MATLAB\vlfeat-0.9.20/toolbox/vl_setup
 % - with the pathway changed to match the vl_setup path
-close all;
+%close all;
 
 % pipeline as follows
 % - read in images to mosaic
@@ -22,7 +22,7 @@ startImage = 168;
 imArray = {};
 
 for n = startImage:(startImage+numToStitch)-1
-    filename = sprintf('tiger/im%dsmall.jpeg', n); % defining the filename
+    filename = sprintf('london2/im%d.jpeg', n); % defining the filename
     im = imread(filename); % reading the image from the given filename
     imArray = [imArray im]; % adding the image to the image Array
 end
@@ -135,10 +135,10 @@ for j = 1:2
         fprintf('Saving H matrix for im%d and im%d\n',m-1, m);
         
         %name = ['H', string(m-1), '_', string(m)];
-        name = ['H', string(m-1)];
+        name = ['homography/H', string(m-1)];
         save(char(name) , 'H');
         
-        if (m > 3)
+        if (m > numToStitch/2)
             m = m - 1;
         else
             m = m + 1;
@@ -178,16 +178,16 @@ for j = 1:2
     % the inner for loop will now loop again, getting H values starting
     % from the end of the array and working towards the centre.
     imArray = fliplr(imArray);
-    m=7; % m is used in the inner loop to keep track of which images to save
+    m=numToStitch; % m is used in the inner loop to keep track of which images to save
 end
 
-im1 = imread('tiger/im168small.jpeg');
-im2 = imread('tiger/im169small.jpeg');
-im3 = imread('tiger/im170small.jpeg');
-im4 = imread('tiger/im171small.jpeg');
-im5 = imread('tiger/im172small.jpeg');
-im6 = imread('tiger/im173small.jpeg');
-im7 = imread('tiger/im174small.jpeg');
+im1 = imread('london2/im168.jpeg');
+im2 = imread('london2/im169.jpeg');
+im3 = imread('london2/im170.jpeg');
+im4 = imread('london2/im171.jpeg');
+im5 = imread('london2/im172.jpeg');
+im6 = imread('london2/im173.jpeg');
+im7 = imread('london2/im174.jpeg');
 [M,N,C] = size(im2);
 
 fprintf('imreads done \n');
@@ -200,16 +200,16 @@ HArray{1, (numToStitch-1)} = [];
 % the above loop will always save 1 less Homography than numImages, so this
 % will loop from 1:numToStitch-1.
 for n = 1:(numToStitch-1)
-    name = ['H', string(n)];
+    name = ['homography/H', string(n)];
     HArray{n} = load(char(name)); HArray{n} = HArray{n}.H;
 end
 
- H12 = load('H1'); H12 = H12.H; % Homography of im1 to im2
- H23 = load('H2'); H23 = H23.H; % Homography of im3 to im2
- H34 = load('H3'); H34 = H34.H; % Homography of im1 to im2
- H54 = load('H4'); H54 = H54.H; % Homography of im3 to im2
- H65 = load('H5'); H65 = H65.H; % Homography of im1 to im2
- H76 = load('H6'); H76 = H76.H; % Homography of im3 to im2
+ H12 = load('homography/H1           '); H12 = H12.H; % Homography of im1 to im2
+ H23 = load('homography/H2           '); H23 = H23.H; % Homography of im3 to im2
+ H34 = load('homography/H3           '); H34 = H34.H; % Homography of im1 to im2
+ H54 = load('homography/H4           '); H54 = H54.H; % Homography of im3 to im2
+ H65 = load('homography/H5           '); H65 = H65.H; % Homography of im1 to im2
+ H76 = load('homography/H6           '); H76 = H76.H; % Homography of im3 to im2
 
 fprintf('Homography matrices loaded \n');
 
@@ -270,6 +270,9 @@ HxArray2 = fliplr(HxArray2);
 HxArray = [HxArray, HArray{(size(HArray, 2)/2)}];
 HxArray2 = [HArray{(size(HArray, 2)/2)+1}, HxArray2];
 
+% HxArray = [HxArray,HArray{(size(HArray, 2)/2)+1}];
+% HxArray2 = [HArray{(size(HArray, 2)/2)}, HxArray2];
+
 % concatenating the 2 arrays into one
 HxFinal = [HxArray, HxArray2];
 
@@ -282,6 +285,7 @@ HxFinal = [HxArray, HxArray2];
 % HxFinal{4} = H54;
 % HxFinal{5} = H65*H54;
 % HxFinal{6} = H76*H65*H54;
+
 
 fprintf('Homography matrices multiplied\n');
 

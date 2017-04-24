@@ -92,45 +92,85 @@ for j = 1:2
         
         fprintf('sift features found for image: %d\n', n);
         
-        % MATCH LOCAL DESCRIPTORS
-        % for each descriptor(key feature) in d1, vl_ubcmatch finds the closest descriptor in d2
-        % the index gets stored in matches and the distance between in scores.
-        % ubcmatch computes approximate matches between the images - so it's
-        % fast but could be more accurate
-        [matches, scores] = vl_ubcmatch(D1, D2);
-        
-        numMatches = size(matches,2);
-        fprintf('matched %d local descriptors for image: %d and %d\n', numMatches, m-1, m);
-        
-        
-        %% RANSAC
-        % Ransac computes a homography matrix that can then be used to map
-        % the coordinates of one image to the coordinates of another image
-        X1 = F1(1:2,matches(1,:)) ; X1(3,:) = 1 ;
-        X2 = F2(1:2,matches(2,:)) ; X2(3,:) = 1 ;
-        
-        clear H score ok ;
-        for t = 1:100
-            % estimate homograpyh
-            subset = vl_colsubset(1:numMatches, 4) ;
-            A = [] ;
-            for i = subset
-                A = cat(1, A, kron(X1(:,i)', vl_hat(X2(:,i)))) ;
+        d = dist(D1',D2); % Distance between D1's column and D2's column
+    [Y I] = min(d);
+    count = 0; % Number of non-overlapped correspondences
+    c1 = zeros(1,2); % Corresponding feature coordinates of im1
+    c2 = zeros(1,2); % Corresponding feature coordinates of im2
+    %% Find correspondences between two images using Euclidean distance %%
+    img = [imArray{m},imArray{n+1}];
+    for k = 1:length(Y)
+        ind = 1; % Indicator to avoid overlapped correspondences
+        for l = 1:length(I)
+            if l~=k && I(l)==I(k)
+                ind = 0;
+                break;
             end
-            [U,S,V] = svd(A) ;
-            H{t} = reshape(V(:,9),3,3) ;
-            
-            % score homography
-            X2_ = H{t} * X1 ;
-            du = X2_(1,:)./X2_(3,:) - X2(1,:)./X2(3,:) ;
-            dv = X2_(2,:)./X2_(3,:) - X2(2,:)./X2(3,:) ;
-            ok{t} = (du.*du + dv.*dv) < 6*6 ;
-            score(t) = sum(ok{t}) ;
         end
-        
-        [score, best] = max(score) ;
-        H = H{best} ; % all matches
-        ok = ok{best} ; % inliner matches
+        if ind && Y(k) < 35 % Threshold for Euclidean distance
+            count = count + 1;
+            c1(count,:) = round(F1(1:2,I(k)));
+            c2(count,:) = round(F2(1:2,k));
+        end
+    end
+    %% RANSAC algorithm %%
+    nc = 6; % Number of correspondences used to find a homography
+    N = fix(log(1-.99)/log(1-(1-.1)^nc)); % Number of trials by 10% rule
+    M = fix((1-.1)*count); % Minimum size for the inlier set
+    d_min = 1e100;
+    for o = 1:N
+        lcv = 1; % Loop control variable
+        while lcv % To avoid repeated selection
+            r = randi(count,nc,1);
+            r = sort(r);
+            for k = 1:nc-1
+                lcv = lcv*(r(k+1)-r(k));
+            end
+            lcv = ~lcv;
+        end
+        A = zeros(2*nc,9);
+        for k = 1:nc
+            A(2*k-1:2*k,:)=...
+                [0,0,0,-[c1(r(k),:),1],c2(r(k),2)*[c1(r(k),:),1];
+                [c1(r(k),:),1],0,0,0,-c2(r(k),1)*[c1(r(k),:),1]];
+        end
+        [U,D,V] = svd(A);
+        h = V(:,9);
+        H = [h(1),h(2),h(3);h(4),h(5),h(6);h(7),h(8),h(9)];
+    
+        d2 = zeros(count,1); % d^2(x_measured, x_true)
+        for k = 1:count
+            x_true = H*[c1(k,:),1]'; % x_true in HC
+            temp = x_true/x_true(3);
+            x_true = temp(1:2); % x_true in image plane
+            d = c2(k,:)-x_true';
+            d2(k) = d(1)^2+d(2)^2;
+        end
+        [Y I] = sort(d2);
+        if sum(Y(1:M)) < d_min
+            d_min = sum(Y(1:M));
+            inliers = I(1:M);
+            outliers = I(M+1:end);
+        end
+    end
+
+    %% Linear Least Squares %%
+    A = zeros(2*M,9);
+    for k = 1:M
+        A(2*k-1:2*k,:)=...
+            [0,0,0,-[c1(inliers(k),:),1],c2(inliers(k),2)*[c1(inliers(k),:),1];
+            [c1(inliers(k),:),1],0,0,0,-c2(inliers(k),1)*[c1(inliers(k),:),1]];
+    end
+    [U,D,V] = svd(A);
+    h1 = V(:,9); % Homography estimated by LLS with all inliers
+    %% Non-linear Least Square (Levenberg-Marquardt) %%
+    c1 = c1(inliers,:)';
+    c1 = c1(:);
+    c2 = c2(inliers,:)';
+    c2 = c2(:);
+    opt = optimset('Algorithm','levenberg-marquardt');
+    h2 = lsqcurvefit(@fun,h1,c1,c2,[],[],opt); % Refined homography by L.M.
+    H = [h2(1),h2(2),h2(3);h2(4),h2(5),h2(6);h2(7),h2(8),h2(9)];
         
         fprintf('Saving H matrix for im%d and im%d\n',m-1, m);
         
@@ -144,34 +184,34 @@ for j = 1:2
             m = m + 1;
         end
                
-        %% Showing inliner matches
-        % again - for displaying points use the original im1 and im2 not Ig
-        dh1 = max(size(Ig,1)-size(imPrev,1),0) ;
-        dh2 = max(size(imPrev,1)-size(Ig,1),0) ;
-        
-        % matches before ransac
-        figure; clf ;
-        subplot(2,1,1) ;
-        imagesc([padarray(imPrev,dh1,'post') padarray(Ig,dh2,'post')]) ;
-        o = size(imPrev,2) ;
-        line([F1(1,matches(1,:));F2(1,matches(2,:))+o], ...
-            [F1(2,matches(1,:));F2(2,matches(2,:))]) ;
-        title(sprintf('%d tentative matches', numMatches)) ;
-        axis image off ;
-        
-        % matches after ransac
-        subplot(2,1,2) ;
-        imagesc([padarray(imPrev,dh1,'post') padarray(Ig,dh2,'post')]) ;
-        o = size(imPrev,2) ;
-        line([F1(1,matches(1,ok));F2(1,matches(2,ok))+o], ...
-            [F1(2,matches(1,ok));F2(2,matches(2,ok))]) ;
-        title(sprintf('%d (%.2f%%) inliner matches out of %d', ...
-            sum(ok), ...
-            100*sum(ok)/numMatches, ...
-            numMatches)) ;
-        axis image off ;
-        
-        drawnow ;
+%         %% Showing inliner matches
+%         % again - for displaying points use the original im1 and im2 not Ig
+%         dh1 = max(size(Ig,1)-size(imPrev,1),0) ;
+%         dh2 = max(size(imPrev,1)-size(Ig,1),0) ;
+%         
+%         % matches before ransac
+%         figure; clf ;
+%         subplot(2,1,1) ;
+%         imagesc([padarray(imPrev,dh1,'post') padarray(Ig,dh2,'post')]) ;
+%         o = size(imPrev,2) ;
+%         line([F1(1,matches(1,:));F2(1,matches(2,:))+o], ...
+%             [F1(2,matches(1,:));F2(2,matches(2,:))]) ;
+%         title(sprintf('%d tentative matches', numMatches)) ;
+%         axis image off ;
+%         
+%         % matches after ransac
+%         subplot(2,1,2) ;
+%         imagesc([padarray(imPrev,dh1,'post') padarray(Ig,dh2,'post')]) ;
+%         o = size(imPrev,2) ;
+%         line([F1(1,matches(1,ok));F2(1,matches(2,ok))+o], ...
+%             [F1(2,matches(1,ok));F2(2,matches(2,ok))]) ;
+%         title(sprintf('%d (%.2f%%) inliner matches out of %d', ...
+%             sum(ok), ...
+%             100*sum(ok)/numMatches, ...
+%             numMatches)) ;
+%         axis image off ;
+%         
+%         drawnow ;
         
     end
     % now flip the order of the image array
@@ -267,7 +307,6 @@ end
 HxArray2 = fliplr(HxArray2);
 
 % add the two unmultipled H matrices in the correct places
-
 HxArray = [HxArray,HArray{(size(HArray, 2)/2)+1}];
 HxArray2 = [HArray{(size(HArray, 2)/2)}, HxArray2];
 
@@ -350,29 +389,29 @@ img(2-ymin:M+1-ymin,2-xmin:N+1-xmin,:) = imArray{ ((size(imArray,2)/2)+0.5) }; %
 fprintf('mosaic im4\n');
 figure; imshow(img); title('final');
 
-% %% Assign pixel values into the mosaiced image %%
-% img = zeros(ymax-ymin+1,xmax-xmin+1,C); % Initialize mosaiced image
-% fprintf('assigned zeros done\n');
-% figure; imshow(img);
-% img = mosaic(img,im1,H14,xmin,ymin); % Mosaicking im1
-% fprintf('mosaic im1\n');
-% figure; imshow(img); title('im1');
-% img = mosaic(img,im7,H74,xmin,ymin); % Mosaicking im7
-% fprintf('mosaic im7\n');
-% figure; imshow(img); title('im7');
-% img = mosaic(img,im2,H24,xmin,ymin); % Mosaicking im2
-% fprintf('mosaic im2\n');
-% figure; imshow(img); title('im2');
-% img = mosaic(img,im6,H64,xmin,ymin); % Mosaicking im6
-% fprintf('mosaic im6\n');
-% figure; imshow(img); title('im6');
-% img = mosaic(img,im3,H34,xmin,ymin); % Mosaicking im3
-% fprintf('mosaic im3\n');
-% figure; imshow(img); title('im3');
-% img = mosaic(img,im5,H54,xmin,ymin); % Mosaicking im5
-% fprintf('mosaic im5\n');
-% figure; imshow(img); title('im5');
-% 
-% img(2-ymin:M+1-ymin,2-xmin:N+1-xmin,:) = im4; % Mosaicking im4
-% fprintf('mosaic im4\n');
-% figure; imshow(img); title('final');
+%% Assign pixel values into the mosaiced image %%
+img = zeros(ymax-ymin+1,xmax-xmin+1,C); % Initialize mosaiced image
+fprintf('assigned zeros done\n');
+figure; imshow(img);
+img = mosaic(img,im1,H14,xmin,ymin); % Mosaicking im1
+fprintf('mosaic im1\n');
+figure; imshow(img); title('im1');
+img = mosaic(img,im7,H74,xmin,ymin); % Mosaicking im7
+fprintf('mosaic im7\n');
+figure; imshow(img); title('im7');
+img = mosaic(img,im2,H24,xmin,ymin); % Mosaicking im2
+fprintf('mosaic im2\n');
+figure; imshow(img); title('im2');
+img = mosaic(img,im6,H64,xmin,ymin); % Mosaicking im6
+fprintf('mosaic im6\n');
+figure; imshow(img); title('im6');
+img = mosaic(img,im3,H34,xmin,ymin); % Mosaicking im3
+fprintf('mosaic im3\n');
+figure; imshow(img); title('im3');
+img = mosaic(img,im5,H54,xmin,ymin); % Mosaicking im5
+fprintf('mosaic im5\n');
+figure; imshow(img); title('im5');
+
+img(2-ymin:M+1-ymin,2-xmin:N+1-xmin,:) = im4; % Mosaicking im4
+fprintf('mosaic im4\n');
+figure; imshow(img); title('final');
