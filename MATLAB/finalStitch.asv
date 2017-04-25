@@ -3,7 +3,7 @@
 % once downloaded and unpacked the command below must be ran on each Matlab restart
 % run D:\Users\James\Documents\GitHub\ImageStitching\MATLAB\vlfeat-0.9.20/toolbox/vl_setup
 % - with the pathway changed to match the vl_setup path
-%close all;
+close all;
 
 % pipeline as follows
 % - read in images to mosaic
@@ -21,8 +21,8 @@ startImage = 168;
 % Creating an array to store the images
 imArray = {};
 
-for n = startImage:(startImage+numToStitch)-1
-    filename = sprintf('london2/im%d.jpeg', n); % defining the filename
+for imN = startImage:(startImage+numToStitch)-1
+    filename = sprintf('barret1/im%d.jpeg', imN); % defining the filename
     im = imread(filename); % reading the image from the given filename
     imArray = [imArray im]; % adding the image to the image Array
 end
@@ -102,6 +102,33 @@ for j = 1:2
         numMatches = size(matches,2);
         fprintf('matched %d local descriptors for image: %d and %d\n', numMatches, m-1, m);
         
+        % this will keep looping as long as there are enough match
+        while (numMatches > 20)    
+            imArray{n} = imArray{n+1}; % replace current imArray{n} image with imArray{n+1}
+            imArray(n+1) = []; % remove n+1 from the array
+            % load a new image into the imArray so that it keeps the same
+            % amount of frames as when it was initialised
+            imN = imN + 1; % imN is used from the earlier loop when the array was made.
+            filename = sprintf('barret1/im%d.jpeg', imN); % defining the filename
+            im = imread(filename); % reading the image from the given filename
+            imArray = [imArray im]; % adding the image to the image Array
+            
+            % pre-processing for new image
+            I = imArray{n};
+            I = im2single(I);
+            if size(I,3) > 1
+                Ig = rgb2gray(I);
+            else
+                Ig = I;
+            end
+            %sift for new image
+            [F2,D2] = vl_sift(Ig);
+            fprintf('sift features found for image: %d\n', n);
+            %recomputing numMatches
+            [matches, scores] = vl_ubcmatch(D1, D2);       
+            numMatches = size(matches,2);
+            fprintf('matched %d local descriptors for image: %d and %d\n', numMatches, m-1, m);
+        end
         
         %% RANSAC
         % Ransac computes a homography matrix that can then be used to map
@@ -188,7 +215,7 @@ im4 = imread('london2/im171.jpeg');
 im5 = imread('london2/im172.jpeg');
 im6 = imread('london2/im173.jpeg');
 im7 = imread('london2/im174.jpeg');
-[M,N,C] = size(im2);
+[M,N,C] = size(imArray{2});
 
 fprintf('imreads done \n');
 
@@ -267,11 +294,9 @@ end
 HxArray2 = fliplr(HxArray2);
 
 % add the two unmultipled H matrices in the correct places
-HxArray = [HxArray, HArray{(size(HArray, 2)/2)}];
-HxArray2 = [HArray{(size(HArray, 2)/2)+1}, HxArray2];
 
-% HxArray = [HxArray,HArray{(size(HArray, 2)/2)+1}];
-% HxArray2 = [HArray{(size(HArray, 2)/2)}, HxArray2];
+HxArray = [HxArray,HArray{(size(HArray, 2)/2)+1}];
+HxArray2 = [HArray{(size(HArray, 2)/2)}, HxArray2];
 
 % concatenating the 2 arrays into one
 HxFinal = [HxArray, HxArray2];
@@ -289,13 +314,13 @@ HxFinal = [HxArray, HxArray2];
 
 fprintf('Homography matrices multiplied\n');
 
-% %% Boundary Condition of Mosaiced Image %%
-% h14 = H14'; h14 = h14(:); % Change homograpy to a vector form.
-% h24 = H24'; h24 = h24(:);
-% h34 = H34'; h34 = h34(:);
-% h54 = H54'; h54 = h54(:);
-% h64 = H64'; h64 = h64(:);
-% h74 = H74'; h74 = h74(:);
+%% Boundary Condition of Mosaiced Image %%
+h14 = H14'; h14 = h14(:); % Change homograpy to a vector form.
+h24 = H24'; h24 = h24(:);
+h34 = H34'; h34 = h34(:);
+h54 = H54'; h54 = h54(:);
+h64 = H64'; h64 = h64(:);
+h74 = H74'; h74 = h74(:);
 
 HxxArray{1, (numToStitch-1)} = [];
 % HxArray =

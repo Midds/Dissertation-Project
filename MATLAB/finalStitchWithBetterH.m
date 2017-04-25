@@ -24,6 +24,7 @@ imArray = {};
 for n = startImage:(startImage+numToStitch)-1
     filename = sprintf('london2/im%d.jpeg', n); % defining the filename
     im = imread(filename); % reading the image from the given filename
+    %im = imresize(im,2); - used for barret1 images
     imArray = [imArray im]; % adding the image to the image Array
 end
  
@@ -98,7 +99,7 @@ for j = 1:2
     c1 = zeros(1,2); % Corresponding feature coordinates of im1
     c2 = zeros(1,2); % Corresponding feature coordinates of im2
     %% Find correspondences between two images using Euclidean distance %%
-    img = [imArray{m},imArray{n+1}];
+    img = [imArray{n-1},imArray{n}];
     for k = 1:length(Y)
         ind = 1; % Indicator to avoid overlapped correspondences
         for l = 1:length(I)
@@ -107,7 +108,7 @@ for j = 1:2
                 break;
             end
         end
-        if ind && Y(k) < 35 % Threshold for Euclidean distance
+        if ind && Y(k) < 25 % Threshold for Euclidean distance
             count = count + 1;
             c1(count,:) = round(F1(1:2,I(k)));
             c2(count,:) = round(F2(1:2,k));
@@ -218,17 +219,37 @@ for j = 1:2
     % the inner for loop will now loop again, getting H values starting
     % from the end of the array and working towards the centre.
     imArray = fliplr(imArray);
+    
+     % Read the first image from the image set.
+    im1 = imArray{1};
+    
+    % preprocessing for im1
+    im1 = im2single(im1);
+    % make grayscale
+    if size(im1,3) > 1
+        Ig = rgb2gray(im1);
+    else
+        Ig = im1;
+    end
+    
+    % finding sift kypoints for im1
+    % vl_sift uses the vlfeat open source implementation of sift to find
+    % features F2 and descriptors D2 based on the sift algorithm (Lowe, 2004)
+    [F2,D2] = vl_sift(Ig);
+    disp('sift features found for image: 1');
+    
+    
     m=numToStitch; % m is used in the inner loop to keep track of which images to save
 end
 
-im1 = imread('london2/im168.jpeg');
-im2 = imread('london2/im169.jpeg');
-im3 = imread('london2/im170.jpeg');
-im4 = imread('london2/im171.jpeg');
-im5 = imread('london2/im172.jpeg');
-im6 = imread('london2/im173.jpeg');
-im7 = imread('london2/im174.jpeg');
-[M,N,C] = size(im2);
+% im1 = imread('london2/im168.jpeg');
+% im2 = imread('london2/im169.jpeg');
+% im3 = imread('london2/im170.jpeg');
+% im4 = imread('london2/im171.jpeg');
+% im5 = imread('london2/im172.jpeg');
+% im6 = imread('london2/im173.jpeg');
+% im7 = imread('london2/im174.jpeg');
+[M,N,C] = size(imArray{2});
 
 fprintf('imreads done \n');
 
@@ -389,29 +410,29 @@ img(2-ymin:M+1-ymin,2-xmin:N+1-xmin,:) = imArray{ ((size(imArray,2)/2)+0.5) }; %
 fprintf('mosaic im4\n');
 figure; imshow(img); title('final');
 
-%% Assign pixel values into the mosaiced image %%
-img = zeros(ymax-ymin+1,xmax-xmin+1,C); % Initialize mosaiced image
-fprintf('assigned zeros done\n');
-figure; imshow(img);
-img = mosaic(img,im1,H14,xmin,ymin); % Mosaicking im1
-fprintf('mosaic im1\n');
-figure; imshow(img); title('im1');
-img = mosaic(img,im7,H74,xmin,ymin); % Mosaicking im7
-fprintf('mosaic im7\n');
-figure; imshow(img); title('im7');
-img = mosaic(img,im2,H24,xmin,ymin); % Mosaicking im2
-fprintf('mosaic im2\n');
-figure; imshow(img); title('im2');
-img = mosaic(img,im6,H64,xmin,ymin); % Mosaicking im6
-fprintf('mosaic im6\n');
-figure; imshow(img); title('im6');
-img = mosaic(img,im3,H34,xmin,ymin); % Mosaicking im3
-fprintf('mosaic im3\n');
-figure; imshow(img); title('im3');
-img = mosaic(img,im5,H54,xmin,ymin); % Mosaicking im5
-fprintf('mosaic im5\n');
-figure; imshow(img); title('im5');
-
-img(2-ymin:M+1-ymin,2-xmin:N+1-xmin,:) = im4; % Mosaicking im4
-fprintf('mosaic im4\n');
-figure; imshow(img); title('final');
+% %% Assign pixel values into the mosaiced image %%
+% img = zeros(ymax-ymin+1,xmax-xmin+1,C); % Initialize mosaiced image
+% fprintf('assigned zeros done\n');
+% figure; imshow(img);
+% img = mosaic(img,im1,H14,xmin,ymin); % Mosaicking im1
+% fprintf('mosaic im1\n');
+% figure; imshow(img); title('im1');
+% img = mosaic(img,im7,H74,xmin,ymin); % Mosaicking im7
+% fprintf('mosaic im7\n');
+% figure; imshow(img); title('im7');
+% img = mosaic(img,im2,H24,xmin,ymin); % Mosaicking im2
+% fprintf('mosaic im2\n');
+% figure; imshow(img); title('im2');
+% img = mosaic(img,im6,H64,xmin,ymin); % Mosaicking im6
+% fprintf('mosaic im6\n');
+% figure; imshow(img); title('im6');
+% img = mosaic(img,im3,H34,xmin,ymin); % Mosaicking im3
+% fprintf('mosaic im3\n');
+% figure; imshow(img); title('im3');
+% img = mosaic(img,im5,H54,xmin,ymin); % Mosaicking im5
+% fprintf('mosaic im5\n');
+% figure; imshow(img); title('im5');
+% 
+% img(2-ymin:M+1-ymin,2-xmin:N+1-xmin,:) = im4; % Mosaicking im4
+% fprintf('mosaic im4\n');
+% figure; imshow(img); title('final');

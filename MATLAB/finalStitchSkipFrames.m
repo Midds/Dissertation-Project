@@ -21,8 +21,8 @@ startImage = 168;
 % Creating an array to store the images
 imArray = {};
 
-for n = startImage:(startImage+numToStitch)-1
-    filename = sprintf('london2/im%d.jpeg', n); % defining the filename
+for imN = startImage:(startImage+numToStitch)-1
+    filename = sprintf('barret1/im%d.jpeg', imN); % defining the filename
     im = imread(filename); % reading the image from the given filename
     imArray = [imArray im]; % adding the image to the image Array
 end
@@ -60,6 +60,8 @@ disp('sift features found for image: 1');
 % it hits the centre image. This is needed as the H matrices need to be in
 % this order to successfully stitch them together later.
 m = 2;
+N = imN + 1;
+imNames = zeros(1, numToStitch);
 for j = 1:2
     for n = 2:(numToStitch/2) + 1
         %Store points and features for I(n-1).
@@ -102,7 +104,46 @@ for j = 1:2
         numMatches = size(matches,2);
         fprintf('matched %d local descriptors for image: %d and %d\n', numMatches, m-1, m);
         
+      
+
+%         % this will keep taking the next frame in the imArray as long as
+%         % there are enough matches
+%         while (numMatches > 40)    
+%             imArray{n} = imArray{n+1}; % replace current imArray{n} image with imArray{n+1}
+%             imArray(n+1) = []; % remove n+1 from the array
+%             % load a new image into the imArray so that it keeps the same
+%             % amount of frames as when it was initialised
+%             N = N + 1; % imN is used from the earlier loop when the array was made.
+%             filename = sprintf('barret1/im%d.jpeg', N); % defining the filename
+%             im = imread(filename); % reading the image from the given filename
+%             if (j == 1)
+%                 imArray = [imArray im]; % adding the image to the image Array
+%                 imNames(n-1) = N;        
+%             else
+%                 imArray = [im imArray ]; % adding the image to the image Array
+%                 imNames(n-1 + 4) = N;        
+% 
+%             end
+%             
+%             % pre-processing for new image
+%             I = imArray{n};
+%             I = im2single(I);
+%             if size(I,3) > 1
+%                 Ig = rgb2gray(I);
+%             else
+%                 Ig = I;
+%             end
+%             %sift for new image
+%             [F2,D2] = vl_sift(Ig);
+%             fprintf('sift features found for image: %d\n', n);
+%             %recomputing numMatches
+%             [matches, scores] = vl_ubcmatch(D1, D2);       
+%             numMatches = size(matches,2);
+%             fprintf('matched %d local descriptors for image: %d and %d\n', numMatches, m-1, m);
+%         end
         
+     
+        %for i = 
         %% RANSAC
         % Ransac computes a homography matrix that can then be used to map
         % the coordinates of one image to the coordinates of another image
@@ -132,34 +173,6 @@ for j = 1:2
         H = H{best} ; % all matches
         ok = ok{best} ; % inliner matches
         
-        count = size(inliers, 1);
-        nc = 6; % Number of correspondences used to find a homography
-        N = fix(log(1-.99)/log(1-(1-.1)^nc)); % Number of trials by 10% rule
-    	M = fix((1-.1)*count); % Minimum size for the inlier set
-        
-        %% TESTING LEAST LINEAR
-        % Linear Least Squares %%
-        A = zeros(2*M,9);
-        for k = 1:M
-            A(2*k-1:2*k,:)=...
-                [0,0,0,-[c1(inliers(k),:),1],c2(inliers(k),2)*[c1(inliers(k),:),1];
-                [c1(inliers(k),:),1],0,0,0,-c2(inliers(k),1)*[c1(inliers(k),:),1]];
-        end
-        [U,D,V] = svd(A);
-        h1 = V(:,9); % Homography estimated by LLS with all inliers
-        %% Non-linear Least Square (Levenberg-Marquardt) %%
-        c1 = c1(inliers,:)';
-        c1 = c1(:);
-        c2 = c2(inliers,:)';
-        c2 = c2(:);
-        opt = optimset('Algorithm','levenberg-marquardt');
-        h2 = lsqcurvefit(@fun,h1,c1,c2,[],[],opt); % Refined homography by L.M.
-        H = [h2(1),h2(2),h2(3);h2(4),h2(5),h2(6);h2(7),h2(8),h2(9)];
-        
-        
-        
-        
-        %%
         fprintf('Saving H matrix for im%d and im%d\n',m-1, m);
         
         %name = ['H', string(m-1), '_', string(m)];
@@ -191,11 +204,11 @@ for j = 1:2
         subplot(2,1,2) ;
         imagesc([padarray(imPrev,dh1,'post') padarray(Ig,dh2,'post')]) ;
         o = size(imPrev,2) ;
-        line([F1(1,matches(1,inliers));F2(1,matches(2,inliers))+o], ...
-            [F1(2,matches(1,inliers));F2(2,matches(2,inliers))]) ;
+        line([F1(1,matches(1,ok));F2(1,matches(2,ok))+o], ...
+            [F1(2,matches(1,ok));F2(2,matches(2,ok))]) ;
         title(sprintf('%d (%.2f%%) inliner matches out of %d', ...
-            sum(inliers), ...
-            100*sum(inliers)/numMatches, ...
+            sum(ok), ...
+            100*sum(ok)/numMatches, ...
             numMatches)) ;
         axis image off ;
         
@@ -206,8 +219,34 @@ for j = 1:2
     % the inner for loop will now loop again, getting H values starting
     % from the end of the array and working towards the centre.
     imArray = fliplr(imArray);
+    
+    
+    % Read the first image from the image set.
+    im1 = imArray{1};
+    
+    % preprocessing for im1
+    im1 = im2single(im1);
+    % make grayscale
+    if size(im1,3) > 1
+        Ig = rgb2gray(im1);
+    else
+        Ig = im1;
+    end
+    
+    % finding sift kypoints for im1
+    % vl_sift uses the vlfeat open source implementation of sift to find
+    % features F2 and descriptors D2 based on the sift algorithm (Lowe, 2004)
+    [F2,D2] = vl_sift(Ig);
+    disp('sift features found for image: 1');
+    
     m=numToStitch; % m is used in the inner loop to keep track of which images to save
 end
+
+figure;
+newimage = cell2mat(imArray);
+imshow(newimage);
+title('Images to stitch');
+
 
 im1 = imread('london2/im168.jpeg');
 im2 = imread('london2/im169.jpeg');
@@ -216,7 +255,7 @@ im4 = imread('london2/im171.jpeg');
 im5 = imread('london2/im172.jpeg');
 im6 = imread('london2/im173.jpeg');
 im7 = imread('london2/im174.jpeg');
-[M,N,C] = size(im2);
+[M,N,C] = size(imArray{2});
 
 fprintf('imreads done \n');
 

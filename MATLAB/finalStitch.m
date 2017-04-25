@@ -3,15 +3,7 @@
 % once downloaded and unpacked the command below must be ran on each Matlab restart
 % run D:\Users\James\Documents\GitHub\ImageStitching\MATLAB\vlfeat-0.9.20/toolbox/vl_setup
 % - with the pathway changed to match the vl_setup path
-%close all;
-
-% pipeline as follows
-% - read in images to mosaic
-% - find sift for each and check there's enough matches, if not read in
-% another image
-% - use ransac on sift matches to get homograpy
-% - refine homography using levenberg-marquardt
-% - stitch images
+close all;
 
 % select number of images to stitch
 numToStitch = 7;
@@ -22,7 +14,7 @@ startImage = 168;
 imArray = {};
 
 for n = startImage:(startImage+numToStitch)-1
-    filename = sprintf('london2/im%d.jpeg', n); % defining the filename
+    filename = sprintf('barret1/im%d.jpeg', n); % defining the filename
     im = imread(filename); % reading the image from the given filename
     imArray = [imArray im]; % adding the image to the image Array
 end
@@ -178,17 +170,30 @@ for j = 1:2
     % the inner for loop will now loop again, getting H values starting
     % from the end of the array and working towards the centre.
     imArray = fliplr(imArray);
+    
+     % Read the first image from the image set.
+    im1 = imArray{1};
+    
+    % preprocessing for im1
+    im1 = im2single(im1);
+    % make grayscale
+    if size(im1,3) > 1
+        Ig = rgb2gray(im1);
+    else
+        Ig = im1;
+    end
+    
+    % finding sift kypoints for im1
+    % vl_sift uses the vlfeat open source implementation of sift to find
+    % features F2 and descriptors D2 based on the sift algorithm (Lowe, 2004)
+    [F2,D2] = vl_sift(Ig);
+    disp('sift features found for image: 1');
+    
+    
     m=numToStitch; % m is used in the inner loop to keep track of which images to save
 end
 
-im1 = imread('london2/im168.jpeg');
-im2 = imread('london2/im169.jpeg');
-im3 = imread('london2/im170.jpeg');
-im4 = imread('london2/im171.jpeg');
-im5 = imread('london2/im172.jpeg');
-im6 = imread('london2/im173.jpeg');
-im7 = imread('london2/im174.jpeg');
-[M,N,C] = size(im2);
+[M,N,C] = size(imArray{2});
 
 fprintf('imreads done \n');
 
