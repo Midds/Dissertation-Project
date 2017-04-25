@@ -6,8 +6,8 @@ clear; close;
 % im1 = imread('tiger/im170small.jpeg');
 % im2 = imread('tiger/im171small.jpeg');
 % im2 = imread('tiger/im172small.jpeg');
- im2 = imread('tiger/im173small.jpeg');
- im1 = imread('tiger/im174small.jpeg');
+ im1 = imread('tiger/im173small.jpeg');
+ im2 = imread('tiger/im174small.jpeg');
 
 % im1 = imread('barret1/im14.jpeg');
 % barret14 doesnt work
@@ -127,5 +127,5 @@ H = [h2(1),h2(2),h2(3);h2(4),h2(5),h2(6);h2(7),h2(8),h2(9)];
 
 fprintf('Saving H matrix');
         
-        name = ['Test7_6'];
+        name = ['Testagain2'];
         save(char(name) , 'H');

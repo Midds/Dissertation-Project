@@ -14,17 +14,19 @@
 % - stitch images
 
 % select number of images to stitch
-numToStitch = 7;
+numToStitch = 9;
 % select the starting image to stitch (whatever number it is in the file)
 % eg if image name = 'im168.jpeg', then startImage = 168
 startImage = 168;
 % Creating an array to store the images
 imArray = {};
+imNames = zeros(1, numToStitch);
 
 for imN = startImage:(startImage+numToStitch)-1
     filename = sprintf('barret1/im%d.jpeg', imN); % defining the filename
     im = imread(filename); % reading the image from the given filename
     imArray = [imArray im]; % adding the image to the image Array
+    imNames(imN - (startImage-1)) = imN;
 end
  
 figure;
@@ -61,7 +63,6 @@ disp('sift features found for image: 1');
 % this order to successfully stitch them together later.
 m = 2;
 N = imN + 1;
-imNames = zeros(1, numToStitch);
 for j = 1:2
     for n = 2:(numToStitch/2) + 1
         %Store points and features for I(n-1).
@@ -106,41 +107,53 @@ for j = 1:2
         
       
 
-%         % this will keep taking the next frame in the imArray as long as
-%         % there are enough matches
-%         while (numMatches > 40)    
-%             imArray{n} = imArray{n+1}; % replace current imArray{n} image with imArray{n+1}
-%             imArray(n+1) = []; % remove n+1 from the array
-%             % load a new image into the imArray so that it keeps the same
-%             % amount of frames as when it was initialised
-%             N = N + 1; % imN is used from the earlier loop when the array was made.
-%             filename = sprintf('barret1/im%d.jpeg', N); % defining the filename
-%             im = imread(filename); % reading the image from the given filename
-%             if (j == 1)
+        % this will keep taking the next frame in the imArray as long as
+        % there are enough matches
+        while (numMatches > 35)    
+            if (j == 1)
+                imArray{n} = imArray{n+1}; % replace current imArray{n} image with imArray{n+1}
+                imNames(n) = imNames(n+1);
+                imArray(n+1) = []; % remove n+1 from the array
+                imNames(n+1) = [];
+                % load a new image into the end of imArray so that it keeps the same
+                % amount of frames as when it was initialised
+                N = N + 1; % imN is used from the earlier loop when the array was made.
+                filename = sprintf('barret1/im%d.jpeg', N); % defining the filename
+                im = imread(filename); % reading the image from the given filename
+            
+                imArray = [imArray im]; % adding the image to the image Array
+                imNames = [imNames N];       
+%             else
+%                 filename = sprintf('barret1/im%d.jpeg', N); % defining the filename
+%                 im = imread(filename); % reading the image from the given filename
+%             
 %                 imArray = [imArray im]; % adding the image to the image Array
 %                 imNames(n-1) = N;        
-%             else
+%                 
+%                 imArray{n-1} = 
+%                 
 %                 imArray = [im imArray ]; % adding the image to the image Array
 %                 imNames(n-1 + 4) = N;        
-% 
-%             end
-%             
-%             % pre-processing for new image
-%             I = imArray{n};
-%             I = im2single(I);
-%             if size(I,3) > 1
-%                 Ig = rgb2gray(I);
-%             else
-%                 Ig = I;
-%             end
-%             %sift for new image
-%             [F2,D2] = vl_sift(Ig);
-%             fprintf('sift features found for image: %d\n', n);
-%             %recomputing numMatches
-%             [matches, scores] = vl_ubcmatch(D1, D2);       
-%             numMatches = size(matches,2);
-%             fprintf('matched %d local descriptors for image: %d and %d\n', numMatches, m-1, m);
-%         end
+            
+                    % pre-processing for new image
+                I = imArray{n};
+                I = im2single(I);
+                if size(I,3) > 1
+                    Ig = rgb2gray(I);
+                else
+                    Ig = I;
+                end
+                %sift for new image
+                [F2,D2] = vl_sift(Ig);
+                fprintf('sift features found for image: %d\n', n);
+                %recomputing numMatches
+                [matches, scores] = vl_ubcmatch(D1, D2);       
+                numMatches = size(matches,2);
+                fprintf('matched %d local descriptors for image: %d and %d\n', numMatches, m-1, m);
+            else
+                break;
+            end
+        end
         
      
         %for i = 
@@ -242,10 +255,16 @@ for j = 1:2
     m=numToStitch; % m is used in the inner loop to keep track of which images to save
 end
 
+
+imTitle = 'Mosaicing images: ';
+for n = 1:size(imNames, 2)
+    imTitle = imTitle + string(imNames(n) + string(', '));
+end
+
 figure;
 newimage = cell2mat(imArray);
 imshow(newimage);
-title('Images to stitch');
+title(sprintf(imTitle));
 
 
 im1 = imread('london2/im168.jpeg');

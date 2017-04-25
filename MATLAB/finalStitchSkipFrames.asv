@@ -109,36 +109,49 @@ for j = 1:2
         % this will keep taking the next frame in the imArray as long as
         % there are enough matches
         while (numMatches > 40)    
-            imArray{n} = imArray{n+1}; % replace current imArray{n} image with imArray{n+1}
-            imArray(n+1) = []; % remove n+1 from the array
-            % load a new image into the imArray so that it keeps the same
-            % amount of frames as when it was initialised
-            N = N + 1; % imN is used from the earlier loop when the array was made.
-            filename = sprintf('barret1/im%d.jpeg', N); % defining the filename
-            im = imread(filename); % reading the image from the given filename
             if (j == 1)
-                imArray = [imArray im]; % adding the image to the image Array
-            else
-                imArray = [im imArray ]; % adding the image to the image Array
-            end
+                imArray{n} = imArray{n+1}; % replace current imArray{n} image with imArray{n+1}
+                imArray(n+1) = []; % remove n+1 from the array
+                % load a new image into the end of imArray so that it keeps the same
+                % amount of frames as when it was initialised
+                N = N + 1; % imN is used from the earlier loop when the array was made.
+                filename = sprintf('barret1/im%d.jpeg', N); % defining the filename
+                im = imread(filename); % reading the image from the given filename
             
-            % pre-processing for new image
-            I = imArray{n};
-            I = im2single(I);
-            if size(I,3) > 1
-                Ig = rgb2gray(I);
+                imArray = [imArray im]; % adding the image to the image Array
+                imNames(n-1) = N;        
+%             else
+%                 filename = sprintf('barret1/im%d.jpeg', N); % defining the filename
+%                 im = imread(filename); % reading the image from the given filename
+%             
+%                 imArray = [imArray im]; % adding the image to the image Array
+%                 imNames(n-1) = N;        
+%                 
+%                 imArray{n-1} = 
+%                 
+%                 imArray = [im imArray ]; % adding the image to the image Array
+%                 imNames(n-1 + 4) = N;        
+            
+                    % pre-processing for new image
+                I = imArray{n};
+                I = im2single(I);
+                if size(I,3) > 1
+                    Ig = rgb2gray(I);
+                else
+                    Ig = I;
+                end
+                %sift for new image
+                [F2,D2] = vl_sift(Ig);
+                fprintf('sift features found for image: %d\n', n);
+                %recomputing numMatches
+                [matches, scores] = vl_ubcmatch(D1, D2);       
+                numMatches = size(matches,2);
+                fprintf('matched %d local descriptors for image: %d and %d\n', numMatches, m-1, m);
             else
-                Ig = I;
-            end
-            %sift for new image
-            [F2,D2] = vl_sift(Ig);
-            fprintf('sift features found for image: %d\n', n);
-            %recomputing numMatches
-            [matches, scores] = vl_ubcmatch(D1, D2);       
-            numMatches = size(matches,2);
-            fprintf('matched %d local descriptors for image: %d and %d\n', numMatches, m-1, m);
+                
         end
-        i
+        
+     
         %for i = 
         %% RANSAC
         % Ransac computes a homography matrix that can then be used to map
@@ -217,23 +230,23 @@ for j = 1:2
     imArray = fliplr(imArray);
     
     
-%     % Read the first image from the image set.
-%     im1 = imArray{1};
-%     
-%     % preprocessing for im1
-%     im1 = im2single(im1);
-%     % make grayscale
-%     if size(im1,3) > 1
-%         Ig = rgb2gray(im1);
-%     else
-%         Ig = im1;
-%     end
-%     
-%     % finding sift kypoints for im1
-%     % vl_sift uses the vlfeat open source implementation of sift to find
-%     % features F2 and descriptors D2 based on the sift algorithm (Lowe, 2004)
-%     [F2,D2] = vl_sift(Ig);
-%     disp('sift features found for image: 1');
+    % Read the first image from the image set.
+    im1 = imArray{1};
+    
+    % preprocessing for im1
+    im1 = im2single(im1);
+    % make grayscale
+    if size(im1,3) > 1
+        Ig = rgb2gray(im1);
+    else
+        Ig = im1;
+    end
+    
+    % finding sift kypoints for im1
+    % vl_sift uses the vlfeat open source implementation of sift to find
+    % features F2 and descriptors D2 based on the sift algorithm (Lowe, 2004)
+    [F2,D2] = vl_sift(Ig);
+    disp('sift features found for image: 1');
     
     m=numToStitch; % m is used in the inner loop to keep track of which images to save
 end
