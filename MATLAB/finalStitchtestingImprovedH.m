@@ -216,7 +216,7 @@ im4 = imread('london2/im171.jpeg');
 im5 = imread('london2/im172.jpeg');
 im6 = imread('london2/im173.jpeg');
 im7 = imread('london2/im174.jpeg');
-[M,N,C] = size(im2);
+[M,N,C] = size(imArray{2});
 
 fprintf('imreads done \n');
 

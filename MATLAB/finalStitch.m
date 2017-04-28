@@ -6,15 +6,15 @@
 close all;
 
 % select number of images to stitch
-numToStitch = 7;
+numToStitch = 9;
 % select the starting image to stitch (whatever number it is in the file)
 % eg if image name = 'im168.jpeg', then startImage = 168
-startImage = 168;
+startImage = 185;
 % Creating an array to store the images
 imArray = {};
 
 for n = startImage:(startImage+numToStitch)-1
-    filename = sprintf('barret1/im%d.jpeg', n); % defining the filename
+    filename = sprintf('barret2/im%d.jpeg', n); % defining the filename
     im = imread(filename); % reading the image from the given filename
     imArray = [imArray im]; % adding the image to the image Array
 end

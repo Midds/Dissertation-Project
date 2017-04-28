@@ -13,6 +13,8 @@
 % - refine homography using levenberg-marquardt
 % - stitch images
 
+%line 111 change threshold to 25 for barett images
+
 % select number of images to stitch
 numToStitch = 7;
 % select the starting image to stitch (whatever number it is in the file)
@@ -22,9 +24,9 @@ startImage = 168;
 imArray = {};
 
 for n = startImage:(startImage+numToStitch)-1
-    filename = sprintf('london2/im%d.jpeg', n); % defining the filename
+    filename = sprintf('barret1/im%d.jpeg', n); % defining the filename
     im = imread(filename); % reading the image from the given filename
-    %im = imresize(im,2); - used for barret1 images
+    im = imresize(im,1.5); %- required for barret1 images (change the number to 2)
     imArray = [imArray im]; % adding the image to the image Array
 end
  
@@ -41,6 +43,8 @@ im1 = im2single(im1);
 % make grayscale
     if size(im1,3) > 1 
         Ig = rgb2gray(im1); 
+        Ig = imadjust(Ig);
+
     else
         Ig = im1;
     end
@@ -80,6 +84,8 @@ for j = 1:2
         % making the image grayscale
         if size(I,3) > 1
             Ig = rgb2gray(I);
+            Ig = imadjust(Ig);
+
         else
             Ig = I;
         end
@@ -108,7 +114,7 @@ for j = 1:2
                 break;
             end
         end
-        if ind && Y(k) < 25 % Threshold for Euclidean distance
+        if ind && Y(k) < 55 % Threshold for Euclidean distance
             count = count + 1;
             c1(count,:) = round(F1(1:2,I(k)));
             c2(count,:) = round(F2(1:2,k));
@@ -265,21 +271,21 @@ for n = 1:(numToStitch-1)
     HArray{n} = load(char(name)); HArray{n} = HArray{n}.H;
 end
 
- H12 = load('homography/H1           '); H12 = H12.H; % Homography of im1 to im2
- H23 = load('homography/H2           '); H23 = H23.H; % Homography of im3 to im2
- H34 = load('homography/H3           '); H34 = H34.H; % Homography of im1 to im2
- H54 = load('homography/H4           '); H54 = H54.H; % Homography of im3 to im2
- H65 = load('homography/H5           '); H65 = H65.H; % Homography of im1 to im2
- H76 = load('homography/H6           '); H76 = H76.H; % Homography of im3 to im2
+%  H12 = load('homography/H1           '); H12 = H12.H; % Homography of im1 to im2
+%  H23 = load('homography/H2           '); H23 = H23.H; % Homography of im3 to im2
+%  H34 = load('homography/H3           '); H34 = H34.H; % Homography of im1 to im2
+%  H54 = load('homography/H4           '); H54 = H54.H; % Homography of im3 to im2
+%  H65 = load('homography/H5           '); H65 = H65.H; % Homography of im1 to im2
+%  H76 = load('homography/H6           '); H76 = H76.H; % Homography of im3 to im2
 
 fprintf('Homography matrices loaded \n');
 
 
-% im1 im2 im3 im4 im5 im6 im7 <- order of single images : im4 is in center.
-H14 = H12*H23*H34;
-H24 = H23*H34;
-H64 = H65*H54;
-H74 = H76*H65*H54;
+% % im1 im2 im3 im4 im5 im6 im7 <- order of single images : im4 is in center.
+% H14 = H12*H23*H34;
+% H24 = H23*H34;
+% H64 = H65*H54;
+% H74 = H76*H65*H54;
 
 % there is always 3 less homographies to create than numImages
 % 2 arrays are needed, one for the inwards, one for outwards
@@ -347,13 +353,13 @@ HxFinal = [HxArray, HxArray2];
 
 fprintf('Homography matrices multiplied\n');
 
-%% Boundary Condition of Mosaiced Image %%
-h14 = H14'; h14 = h14(:); % Change homograpy to a vector form.
-h24 = H24'; h24 = h24(:);
-h34 = H34'; h34 = h34(:);
-h54 = H54'; h54 = h54(:);
-h64 = H64'; h64 = h64(:);
-h74 = H74'; h74 = h74(:);
+% %% Boundary Condition of Mosaiced Image %%
+% h14 = H14'; h14 = h14(:); % Change homograpy to a vector form.
+% h24 = H24'; h24 = h24(:);
+% h34 = H34'; h34 = h34(:);
+% h54 = H54'; h54 = h54(:);
+% h64 = H64'; h64 = h64(:);
+% h74 = H74'; h74 = h74(:);
 
 HxxArray{1, (numToStitch-1)} = [];
 % HxArray =
