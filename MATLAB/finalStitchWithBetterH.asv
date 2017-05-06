@@ -391,7 +391,7 @@ ymax = round(max([c14(y);c74(y)]));
 fprintf('minmax boundary done\n');
 
 %% Assign pixels to create the final mosaic %%
-img = zeros(ymax-ymin+1,xmax-xmin+1,C); % Create boundary black image
+img = zeros(ymax-ymin+1,xmax-xmin+1,C); % Initialize mosaiced image
 fprintf('assigned zeros done\n');
 direction = 'forward';
 m = numToStitch;
