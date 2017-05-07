@@ -8,7 +8,7 @@
 % - with the pathway changed to match the vl_setup path
 % for example:
 % " run D:\Users\James\Documents\GitHub\ImageStitching\MATLAB\vlfeat-0.9.20/toolbox/vl_setup "
-
+% C:\Users\Computing\Downloads\vl\vlfeat-0.9.20-bin.tar\vlfeat-0.9.20-bin\vlfeat-0.9.20\toolbox
 close all;
 
 % pipeline as follows
@@ -37,10 +37,10 @@ for n = startImage:(startImage+numToStitch)-1
 end
 
 % showing images to be stitched
-figure;
-newimage = cell2mat(imArray);
-imshow(newimage);
-title('Images to stitch');
+% figure;
+% newimage = cell2mat(imArray);
+% imshow(newimage);
+% title('Images to stitch');
 
 % Read the first image from the image set.
 im1 = imArray{1};
@@ -189,7 +189,8 @@ for j = 1:2
         fprintf('Saving H matrix for im%d and im%d\n',m-1, m);
         
         %name = ['H', string(m-1), '_', string(m)];
-        name = ['homography/H', string(m-1)];
+        s = sprintf('%d', m-1);
+        name = ['homography/H', s];
         save(char(name) , 'H');
         
         if (m > numToStitch/2)
@@ -267,8 +268,10 @@ HArray{1, (numToStitch-1)} = [];
 % the above loop will always save 1 less Homography than numImages, so this
 % will loop from 1:numToStitch-1.
 for n = 1:(numToStitch-1)
-    name = ['homography/H', string(n)];
-    HArray{n} = load(char(name)); HArray{n} = HArray{n}.H;
+    s = sprintf('%d', n);   
+    name = ['homography/H', s];
+    HArray{n} = load(char(name)); 
+    HArray{n} = HArray{n}.H;
 end
 
 %  H12 = load('homography/H1           '); H12 = H12.H; % Homography of im1 to im2
@@ -409,5 +412,5 @@ for i = 1:numToStitch
 end
 
 img(2-ymin:M+1-ymin,2-xmin:N+1-xmin,:) = imArray{ ((size(imArray,2)/2)+0.5) }; % Mosaicking last image
-fprintf('mosaic im4\n');
+fprintf('Done\n');
 figure; imshow(img); title('final');
