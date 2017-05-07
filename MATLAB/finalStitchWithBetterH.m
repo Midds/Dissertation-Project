@@ -1,9 +1,15 @@
-%% TO RUN, VLFEAT MUST FIRST BE INSTALLED ON THE MACHINE
+%% IMPORTANT %%
+% TO RUN, VLFEAT MUST FIRST BE INSTALLED ON THE MACHINE
 % VLFEAT can be downloaded from http://www.vlfeat.org/download.html or http://www.vlfeat.org/index.html
-% once downloaded and unpacked the command below must be ran on each Matlab restart
-% run D:\Users\James\Documents\GitHub\ImageStitching\MATLAB\vlfeat-0.9.20/toolbox/vl_setup
+% (however, this should already be downloaded and placed in the current
+% folder, but the below command still needs to be executed)
+% Once downloaded and unpacked the command below must be ran on each Matlab restart:
+% " run MY_PATH\ImageStitching\MATLAB\vlfeat-0.9.20/toolbox/vl_setup "
 % - with the pathway changed to match the vl_setup path
-%close all;
+% for example:
+% " run D:\Users\James\Documents\GitHub\ImageStitching\MATLAB\vlfeat-0.9.20/toolbox/vl_setup "
+
+close all;
 
 % pipeline as follows
 % - read in images to mosaic
@@ -29,7 +35,8 @@ for n = startImage:(startImage+numToStitch)-1
     im = imresize(im,1.5); %- required for barret1 images (change the number to 2)
     imArray = [imArray im]; % adding the image to the image Array
 end
- 
+
+% showing images to be stitched
 figure;
 newimage = cell2mat(imArray);
 imshow(newimage);
@@ -248,13 +255,6 @@ for j = 1:2
     m=numToStitch; % m is used in the inner loop to keep track of which images to save
 end
 
-% im1 = imread('london2/im168.jpeg');
-% im2 = imread('london2/im169.jpeg');
-% im3 = imread('london2/im170.jpeg');
-% im4 = imread('london2/im171.jpeg');
-% im5 = imread('london2/im172.jpeg');
-% im6 = imread('london2/im173.jpeg');
-% im7 = imread('london2/im174.jpeg');
 [M,N,C] = size(imArray{2});
 
 fprintf('imreads done \n');
@@ -321,11 +321,7 @@ for n = 1:(numToStitch-3)/2
         HxArray2{n} = HxArray2{n} * HArray{i};
         %HxArray{n} = HArray{1} * HArray{2} * HArray{3};
     end
-    %m = m - 1;   
-
     o = o + 1;
-
-
     fprintf('\nFirst loop ended');
         
 end
