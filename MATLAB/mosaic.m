@@ -1,4 +1,6 @@
 function [ IMG ] = mosaic( IM, im , H, x_min, y_min )
+% Kim, M. (2012) ECE661 Homework 5: Sample Solution Using MATLAB. West Lafayette: Perdue University. Available from 
+% https://engineering.purdue.edu/kak/computervision/ECE661_Fall2012/solution/hw5_s1.pdf [Accessed 24 April 2017].
 % This function maps image 'im' in a plane to a new image
 % 'img' in the mosaiced plane transformed by a homography H
 % Arguments:

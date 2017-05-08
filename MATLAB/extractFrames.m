@@ -1,9 +1,9 @@
 function video = extractFrames(videoName)
 
 % Loading input video file
-% pV = VideoReader('9poster4.mp4');
-% pV = VideoReader('tiger2.mp4');
-%pV = VideoReader('Barretxx1.mpg');
+% pV = VideoReader('videos/london.mp4');
+% pV = VideoReader('videos/tiger2.mp4');
+% pV = VideoReader('videos/Barretxx1.mpg');
 pV = VideoReader(videoName);
 
 %% PRE-PROCESSING

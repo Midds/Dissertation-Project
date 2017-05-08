@@ -1,4 +1,4 @@
-% This is the first iteration cycle prototype, taken from 
+% This is the first iteration cycle prototype, adapted from 
 % MathWorks (2017) Feature Based Panoramic Image Stitching. [online] 
 % Natick: MathWorks. Available from https://uk.mathworks.com/help/vision/examples/feature-based-panoramic-image-stitching.html [Accessed 10 February 2017].
 

@@ -1,4 +1,6 @@
 function [ F ] = fun( h,x )
+% Kim, M. (2012) ECE661 Homework 5: Sample Solution Using MATLAB. West Lafayette: Perdue University. Available from 
+% https://engineering.purdue.edu/kak/computervision/ECE661_Fall2012/solution/hw5_s1.pdf [Accessed 24 April 2017]. 
 % This is a user-defined function to express the homography mapping
 % and 'fun' will be used as a parameter of the non-linear least square
 % fitting function lsqcurvefit().
