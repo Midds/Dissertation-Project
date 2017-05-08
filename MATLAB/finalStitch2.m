@@ -7,13 +7,13 @@
 close all;
 
 % select number of images to stitch
-numToStitch = 11;
+numToStitch = 21;
 % select the starting image to stitch (whatever number it is in the file)
 % eg if image name = 'im168.jpeg', then startImage = 168
 startImage = 168;
 % threshold for adaptive image stitching (suggest around 40 for "barret" and
 % around 1600 for "tiger" and even more for "london")
-matchThresh = 40;
+matchThresh = 50;
 % Creating an array to store the images
 imArray = {};
 imNames = zeros(1, numToStitch);
