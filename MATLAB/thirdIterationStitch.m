@@ -7,20 +7,22 @@
 close all;
 
 % select number of images to stitch
-numToStitch = 11;
+numToStitch = 19;
 % select the starting image to stitch (whatever number it is in the file)
 % eg if image name = 'im168.jpeg', then startImage = 168
-startImage = 168;
-% threshold for adaptive image stitching (suggest around 40 for "barret" and
+startImage = 260;
+% threshold for adaptive image stitching (suggest around 40 - 60 for "barret" and
 % around 1600 for "tiger" and even more for "london")
-matchThresh = 40;
+matchThresh = 55;
 % Creating an array to store the images
 imArray = {};
 imNames = zeros(1, numToStitch);
 
+% IMPORTANT: If you change the filename below, you must also change the filename
+% on line 118 to match this filename.
 for imN = startImage:(startImage+numToStitch)-1
     filename = sprintf('barret1/im%d.jpeg', imN); % defining the filename
-    im = imresize(im,1.5); %- required for barret1 images (change the number to 2)
+    %im = imresize(im,1.5); %- suggested buy not needed for barret1 images
     im = imread(filename); % reading the image from the given filename
     imArray = [imArray im]; % adding the image to the image Array
     imNames(imN - (startImage-1)) = imN;% tracking names of images stitched
@@ -101,9 +103,7 @@ for j = 1:2
         
         numMatches = size(matches,2);
         fprintf('matched %d local descriptors for image: %d and %d\n', numMatches, m-1, m);
-        
-      
-
+              
         % this will keep taking the next frame in the imArray as long as
         % there are enough matches
         while (numMatches > matchThresh)    
@@ -273,39 +273,49 @@ end
 
 fprintf('Homography matrices loaded \n');
 
+%% HOMOGRAPHY CALCULATION
+% Example homography order using 9 images (for easier visualisation)
+% This shows how to create a homography H to get from each image to the
+% centre image by multiplying the other homographies.
+% H15 represents the homography between images 1 and 5, and so forth.
+% im1 im2 im3 im4 im5 im6 im7 im8 im9 = order of images
+% H15 = H12*H23*H34*H45
+% H25 = H23*H34*H45
+% H35 = H34*H45
+% H45 - created in the loop earlier
+% H65 - created in the loop earlier
+% H75 = H76*H65
+% H85 = H87*H76*H65
+% H95 = H98*H87*H76*H65
+
+% Using the above example as a template, this is performed on any number of
+% images using the below loops.
+
 % there is always 3 less homographies to create than numImages
 % 2 arrays are needed, one for the inwards, one for outwards
 %HxArray{1, (numToStitch-3)/2} = []; % creates an empty (1 x numToStich-3) cell array 
 HxArray = cell(1,(numToStitch-3)/2);
 HxArray2 = cell(1,(numToStitch-3)/2);
 
-
 m = numToStitch/2;
 o = 1;
 for n = 1:(numToStitch-3)/2
     HxArray{n} = 1;
     for i = o:m
-        fprintf('Going once %d\n', i);
         HxArray{n} = HxArray{n} * HArray{i};
     end
-
     o = o + 1;
-
-
     fprintf('\nFirst loop ended');
         
 end
-HArray = fliplr(HArray);
+HArray = fliplr(HArray); % flip array and loop again 
 o = 1;
 for n = 1:(numToStitch-3)/2
     HxArray2{n} = 1;
     for i = o:m
-        fprintf('Going once %d\n', i);
         HxArray2{n} = HxArray2{n} * HArray{i};
     end
-
     o = o + 1;
-
 
     fprintf('\nFirst loop ended');
         
@@ -327,11 +337,6 @@ fprintf('Homography matrices multiplied\n');
 %% Boundary Condition of Mosaiced Image %%
 
 HxxArray{1, (numToStitch-1)} = [];
-% HxArray =
-%14
-%24
-%74
-%64
 
 tempHFirst = HxFinal{1}'; tempHFirst = tempHFirst(:); %Change first homograpy to a vector form.
 tempHFinal = HxFinal{size(HxFinal, 2)}'; tempHFinal = tempHFinal(:); %Change last homograpy to a vector form.
@@ -355,6 +360,8 @@ fprintf('assigned zeros done\n');
 direction = 'forward';
 m = numToStitch;
 n = 1;
+% using homography matrices to transform image coordinates of each image
+% onto the black plane
 for i = 1:numToStitch
     if (strcmp(direction ,'forward') == 1)
         img = mosaic(img,imArray{n},HxFinal{n},xmin,ymin);

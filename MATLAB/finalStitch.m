@@ -29,7 +29,7 @@ end
 for n = startImage:(startImage+numToStitch)-1
     filename = sprintf('barret1/im%d.jpeg', n); % defining the filename
     im = imread(filename); % reading the image from the given filename
-    im = imresize(im,1.5); %- required for barret1 images (change the number to 1.5 - 2)
+    % im = imresize(im,1.5); %- suggested but not required for barret1 images (change the number to 1.5 - 2)
     imArray = [imArray im]; % adding the image to the image Array
 end
 
@@ -57,9 +57,6 @@ im1 = im2single(im1);
 % features F2 and descriptors D2 based on the sift algorithm (Lowe, 2004)
 [F2,D2] = vl_sift(Ig);
 disp('sift features found for image: 1');
-
-%points = detectSURFFeatures(grayImage);
-%[features, points] = extractFeatures(grayImage, points);
 
 % Now loop through the remaining images
 % The nested loop will save a homography matrix (Hn) for each successive image
@@ -101,12 +98,15 @@ for j = 1:2
         
         fprintf('sift features found for image: %d\n', n);
         %% MATCHING DESCRIPTORS
+        % Kim, M. (2012) ECE661 Homework 5: Sample Solution Using MATLAB. West Lafayette: Perdue University. Available from 
+        % https://engineering.purdue.edu/kak/computervision/ECE661_Fall2012/solution/hw5_s1.pdf [Accessed 24 April 2017].
+        
         % Nearest neighbour between two sets of descriptors will find the
         % closest descriptor match.
         d = dist(D1',D2); % Distance between D1's column and D2's column
-        [Y I] = min(d);
+        [Y I] = min(d); % Y I used later on in the L.M algorithm
         count = 0; % Number of non-overlapped correspondences
-        c1 = zeros(1,2); % Corresponding feature coordinates of im1
+        c1 = zeros(1,2); % Corresponding feature coordinates of im1 - also used later in the L.M algorithm
         c2 = zeros(1,2); % Corresponding feature coordinates of im2
           
         % Euclidean distance will find a better match than just finding the
@@ -202,35 +202,6 @@ for j = 1:2
             else
                 m = m + 1;
             end
-               
-%         %% Showing inliner matches
-%         % again - for displaying points use the original im1 and im2 not Ig
-%         dh1 = max(size(Ig,1)-size(imPrev,1),0) ;
-%         dh2 = max(size(imPrev,1)-size(Ig,1),0) ;
-%         
-%         % matches before ransac
-%         figure; clf ;
-%         subplot(2,1,1) ;
-%         imagesc([padarray(imPrev,dh1,'post') padarray(Ig,dh2,'post')]) ;
-%         o = size(imPrev,2) ;
-%         line([F1(1,matches(1,:));F2(1,matches(2,:))+o], ...
-%             [F1(2,matches(1,:));F2(2,matches(2,:))]) ;
-%         title(sprintf('%d tentative matches', numMatches)) ;
-%         axis image off ;
-%         
-%         % matches after ransac
-%         subplot(2,1,2) ;
-%         imagesc([padarray(imPrev,dh1,'post') padarray(Ig,dh2,'post')]) ;
-%         o = size(imPrev,2) ;
-%         line([F1(1,matches(1,ok));F2(1,matches(2,ok))+o], ...
-%             [F1(2,matches(1,ok));F2(2,matches(2,ok))]) ;
-%         title(sprintf('%d (%.2f%%) inliner matches out of %d', ...
-%             sum(ok), ...
-%             100*sum(ok)/numMatches, ...
-%             numMatches)) ;
-%         axis image off ;
-%         
-%         drawnow ;
         
     end
     % now flip the order of the image array
@@ -268,7 +239,6 @@ fprintf('imreads done \n');
 % Load estimated and refined homographies in previous steps.
 % All the refined homographies were saved as mat files.
 % preallocating array to hold H
-% HxxArray = cell(1,(numToStitch-1));
 HArray{1, (numToStitch-1)} = [];
 % the above loop will always save 1 less Homography than numImages, so this
 % will loop from 1:numToStitch-1.
@@ -281,7 +251,8 @@ end
 
 fprintf('Homography matrices loaded \n');
 
-%% Example homography order using 9 images (for easier visualisation)
+%% HOMOGRAPHY CALCULATION
+% Example homography order using 9 images (for easier visualisation)
 % This shows how to create a homography H to get from each image to the
 % centre image by multiplying the other homographies.
 % H15 represents the homography between images 1 and 5, and so forth.
@@ -295,7 +266,6 @@ fprintf('Homography matrices loaded \n');
 % H85 = H87*H76*H65
 % H95 = H98*H87*H76*H65
 
-%% HOMOGRAPHY CALCULATION
 % Using the above example as a template, this is performed on any number of
 % images using the below loops.
 
@@ -304,31 +274,22 @@ fprintf('Homography matrices loaded \n');
 HxArray = cell(1,(numToStitch-3)/2); % creates an empty (1 x numToStich-3) cell array 
 HxArray2 = cell(1,(numToStitch-3)/2);
 
-%HxArray2{1, (numToStitch-3)/2} = []; % creates an empty (1 x numToStich-3) cell array 
-
 m = numToStitch/2;
 o = 1;
 for n = 1:(numToStitch-3)/2
     HxArray{n} = 1;
     for i = o:m
-        fprintf('Going once %d\n', i);
         HxArray{n} = HxArray{n} * HArray{i};
-        %HxArray{n} = HArray{1} * HArray{2} * HArray{3};
     end
-    %m = m - 1;   
-
     o = o + 1;
-
-
     fprintf('\nFirst loop ended');
         
 end
-HArray = fliplr(HArray);
+HArray = fliplr(HArray); % flip array and loop again 
 o = 1;
 for n = 1:(numToStitch-3)/2
     HxArray2{n} = 1;
     for i = o:m
-        fprintf('Going once %d\n', i);
         HxArray2{n} = HxArray2{n} * HArray{i};
     end
     o = o + 1;
@@ -357,6 +318,7 @@ c14 = fun(tempHFirst,[1,1,N,1,1,M,N,M]); % Transformed boundaries of the first i
 c74 = fun(tempHFinal,[1,1,N,1,1,M,N,M]); % Transformed boundaries of the last image
 fprintf('boundaries found\n');
 
+% used for creating the boundary image
 x = [1,3,5,7];
 y = [2,4,6,8];
 xmin = round(min([c14(x);c74(x)]));
@@ -372,9 +334,10 @@ fprintf('assigned zeros done\n');
 direction = 'forward';
 m = numToStitch;
 n = 1;
+% using homography matrices to transform image coordinates of each image
+% onto the black plane
 for i = 1:numToStitch
     if (strcmp(direction ,'forward') == 1)
-        %img = mosaic(img,imArray{n},HxFinal{n},xmin,ymin);
         img = mosaic(img,imArray{n},HxFinal{n},xmin,ymin);
 
         fprintf('mosaic im%d\n', n);
